@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import ChatCloseButton from './ChatCloseButton';
+
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -17,11 +19,45 @@ const ChatScreen = () => {
   const [welcomeMessage, setWelcomeMessage] = useState('');
   const [listening, setListening] = useState(false);
   const [chatLog, setChatLog] = useState([]);
+  const [inputValue, setInputValue] = useState('');
   const [transcriptBuffer, setTranscriptBuffer] = useState('');
   const lastFinalTranscript = useRef('');
 
   const audioPlayedRef = useRef(false);
   const welcomeMessageAdded = useRef(false);
+
+   // Cargar conversación previa al iniciar el componente
+   useEffect(() => {
+    const fetchPreviousConversation = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/chat/last-conversation');
+        if (response.data && response.data.conversation) {
+          setChatLog(response.data.conversation); // Cargar la conversación previa
+        }
+      } catch (error) {
+        console.error('Error al cargar la conversación previa:', error);
+      }
+    };
+
+    fetchPreviousConversation();
+  }, []);
+  
+    // Función para agregar mensajes al historial
+    const addMessageToChatLog = (message, sender = 'user') => {
+      setChatLog((prevLog) => [...prevLog, { sender, message }]);
+    };
+  
+      // Guardar conversación en la base de datos
+  const handleSaveConversation = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/chat/save-conversation', { conversation: chatLog });
+      alert('Conversación guardada exitosamente.');
+      window.location.href = '/home'; // Redirigir al Home
+    } catch (error) {
+      console.error('Error al guardar la conversación:', error);
+      alert('No se pudo guardar la conversación.');
+    }
+  };
 
   // Función para reproducir el texto en audio
   const playText = async (text) => {
@@ -137,7 +173,7 @@ const ChatScreen = () => {
   };
 
   return (
-    <div>
+<div>
       <h1>Chat Screen</h1>
       <div className="chat-log">
         {chatLog.map((entry, index) => (
@@ -146,6 +182,11 @@ const ChatScreen = () => {
           </p>
         ))}
       </div>
+
+      <ChatCloseButton
+        conversationData={chatLog} // Pasar el historial actual al botón de cierre
+        onReturnHome={handleSaveConversation} // Guardar y redirigir al Home
+      />
 
       <button onClick={toggleListening}>
         {listening ? 'Detener' : 'Hablar'}
