@@ -8,10 +8,13 @@ import 'dotenv/config';
 // Importa tus rutas (ejemplo)
 import contentRoutes from './routes/contentRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/chat', chatRoutes);
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
