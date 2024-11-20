@@ -6,12 +6,11 @@ const ChatCloseButton = ({ conversationData, onReturnHome }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSaveAndClose = async () => {
+    console.log('Datos de la conversación que se enviarán:', conversationData);
+  
     setIsLoading(true);
     try {
-      // Envía la conversación al backend para guardarla en la base de datos
       await axios.post('http://localhost:5000/api/chat/save-conversation', { conversation: conversationData });
-      
-      // Llama a la función para volver a Home
       onReturnHome();
     } catch (error) {
       console.error('Error al guardar la conversación:', error);

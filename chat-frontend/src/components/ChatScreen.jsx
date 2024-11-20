@@ -62,7 +62,7 @@ const ChatScreen = () => {
   // Función para reproducir el texto en audio
   const playText = async (text) => {
     try {
-      const response = await axios.post(`${API_URL}/tts`, { text }, { responseType: 'arraybuffer' });
+      const response = await axios.post(`${API_URL}/chat/tts`, { text }, { responseType: 'arraybuffer' });
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const audioBuffer = await audioContext.decodeAudioData(response.data);
       const source = audioContext.createBufferSource();
@@ -77,7 +77,9 @@ const ChatScreen = () => {
   // Función para obtener y reproducir el saludo inicial
   const fetchWelcomeMessage = async () => {
     try {
-      const response = await axios.get(`${API_URL}/chat/welcome?level=A1`);
+      const response = await axios.get(`${API_URL}/chat/welcome`,{
+        params: { level:'A1' },
+      });
       const message = response.data.botMessage;
       setWelcomeMessage(message);
 
