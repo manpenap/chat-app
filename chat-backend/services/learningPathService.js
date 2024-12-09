@@ -1,36 +1,26 @@
-// services/learningPathService.js
-const LearningPath = require('../models/LearningPath');
-const Content = require('../models/Content');
+import  LearningPathRepository  from '../repositories/learningPathRepository.js';
 
-async function generateLearningPath(userId, levelCode) {
-  // Verifica si el usuario ya tiene una ruta de aprendizaje
-  let existingPath = await LearningPath.findOne({ userId });
 
-  if (existingPath) {
-    return existingPath;
+class LearningPathService {
+  async getAllLearningPaths() {
+    return await LearningPathRepository.findAll();
   }
 
-  // Obtiene todo el contenido del nivel actual
-  const contents = await Content.find({ levelCode }).sort({ lessonOrder: 1 });
+  async getLearningPathById(id) {
+    return await LearningPathRepository.findById(id);
+  }
 
-  // Crea módulos para la ruta de aprendizaje
-  const modules = contents.map((content) => ({
-    contentId: content._id,
-    completed: false,
-  }));
+  async createLearningPath(data) {
+    return await LearningPathRepository.create(data);
+  }
 
-  // Crea y guarda la nueva ruta de aprendizaje
-  const learningPath = new LearningPath({
-    userId,
-    levelCode,
-    modules,
-  });
+  async updateLearningPath(id, data) {
+    return await LearningPathRepository.updateById(id, data);
+  }
 
-  await learningPath.save();
-
-  return learningPath;
+  async deleteLearningPath(id) {
+    return await LearningPathRepository.deleteById(id);
+  }
 }
 
-module.exports = {
-  generateLearningPath,
-};
+export default new LearningPathService();

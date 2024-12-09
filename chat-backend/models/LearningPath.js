@@ -1,16 +1,13 @@
-// models/LearningPath.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const LearningPathSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  levelCode: String,
-  modules: [
-    {
-      contentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Content' },
-      completed: { type: Boolean, default: false },
-      completionDate: Date,
-    },
-  ],
+  _id: { type: String, required: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  unitIds: [{ type: String, ref: 'Unit' }], // Referencia a unidades
+  createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('LearningPath', LearningPathSchema);
+const LearningPath = mongoose.model('LearningPath', LearningPathSchema, 'learningPaths');
+export default LearningPath;
+
