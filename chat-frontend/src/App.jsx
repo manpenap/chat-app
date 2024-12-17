@@ -10,6 +10,7 @@ const AppRoutes = () => {
     { path: '/', element: <HomeScreen /> },
     { path: "/practice", element: <ChatScreen chatType="practice" userLevel="A1" /> }, // Adjust userLevel if needed
     { path: "/profile", element: <UserProfile /> },
+    { path: "/chatscreen", element: <ChatScreen /> },
     { path: "/evaluation", element: <ChatScreen chatType="evaluation" userLevel="A1" /> },
     { path: "/learning-path", element: <LearningPath /> }
   ]);

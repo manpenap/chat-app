@@ -6,14 +6,30 @@ import { callOpenAIChat } from '../services/externalApiService.js';
 
 export const processChatMessage = async (req, res) => {
   try {
-    const { message, isLesson } = req.body;
+    const { message, isLesson, lessonDetails, isInitialMessage, chatHistory } = req.body;
     const userLevel = req.user?.level || 'A1'; // Asegúrate de que el nivel del usuario esté disponible
-    const botMessage = await handleChatMessage(message, isLesson, userLevel);
+
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ error: "Mensaje vacío o inválido recibido." });
+    }
+    
+    // Verificar si es el mensaje inicial
+    if (isInitialMessage) {
+      const initialMessage = isLesson
+        ? `Hello! Welcome to your lesson on ${lessonDetails?.name ? ` on ${lessonDetails.name}` : ''}. Let's get started!`
+        : "Hello! Welcome to our English practice session. How can I help you today?";
+      
+      return res.status(200).json({ botMessage: initialMessage });
+    }
+
+    // Procesar el mensaje normalmente
+    const botMessage = await handleChatMessage(message, isLesson, userLevel, lessonDetails, chatHistory);
     res.status(200).json({ botMessage });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 

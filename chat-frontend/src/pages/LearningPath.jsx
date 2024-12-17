@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Instalar si no lo tienes: npm install axios
 
 const LearningPath = () => {
@@ -7,10 +8,19 @@ const LearningPath = () => {
   const [error, setError] = useState(null); // Almacena errores
   const [expandedUnit, setExpandedUnit] = useState(null); // Estado para la unidad expandida
 
+  const navigate = useNavigate(); //Hook para navegación
   const id = 'a1_path'; // ID de la ruta de aprendizaje
 
   const toggleUnit = (unitId) => {
     setExpandedUnit((prev) => (prev === unitId ? null : unitId)); // Alterna entre expandir y colapsar
+  };
+
+  const handleLessonClick = (lesson) => {
+    if (lesson.type !== 'listening' && lesson.type !== 'reading') {
+      navigate('/chatscreen', { state: { lesson } }); // Navega a ChatScreen pasando datos de la lección
+    } else {
+      console.log(`La lección "${lesson.name}" no es interactiva.`);
+    }
   };
 
   useEffect(() => {
@@ -60,7 +70,12 @@ const LearningPath = () => {
                       unit.lessons.map((lesson) => (
                         <li
                           key={lesson._id}
-                          className="pl-4 text-sm bg-gray-50 rounded p-2"
+                          className={`pl-4 text-sm bg-gray-50 rounded p-2 cursor-pointer ${
+                            lesson.type === 'listening' || lesson.type === 'reading'
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
+                          }`}
+                          onClick={() => handleLessonClick(lesson)} // Maneja el clic en la lección
                         >
                           {lesson.name}
                         </li>
