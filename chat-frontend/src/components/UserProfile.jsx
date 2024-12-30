@@ -3,12 +3,17 @@ import axios from 'axios';
 
 const UserProfile = () => {
   const [user, setUser] = useState({ name: '', level: '' });
-  const levels = ['A0', 'A1-A2', 'A2-B1', 'B1', 'B2', 'C1-C2'];
+  const levels = ['Principiante', 'Básico', 'Pre-Intermedio', 'Intermedio-Alto', 'Avanzado'];
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/user/profile`);
+        const token = localStorage.getItem('authToken'); // Obtén el token del almacenamiento local o contexto
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setUser(response.data);
       } catch (error) {
         console.error('Error al obtener los datos del perfil:', error);
@@ -16,12 +21,13 @@ const UserProfile = () => {
     };
     fetchUserData();
   }, []);
+  
 
   const handleLevelChange = async (e) => {
     const selectedLevel = e.target.value;
     if (selectedLevel === user.level) return;
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/user/profile`, { level: selectedLevel });
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/user/profile`, { level: selectedLevel });
       setUser((prevUser) => ({ ...prevUser, level: response.data.level }));
     } catch (error) {
       console.error('Error al actualizar el nivel:', error);

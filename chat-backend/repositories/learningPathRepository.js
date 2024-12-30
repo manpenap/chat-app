@@ -1,6 +1,6 @@
-import LearningPath from '../models/LearningPath.js';
-import Unit from '../models/Unit.js';
-import Lesson from '../models/Lesson.js';
+import LearningPath from "../models/LearningPath.js";
+import Unit from "../models/Unit.js";
+import Lesson from "../models/Lesson.js";
 
 class LearningPathRepository {
   async findAll() {
@@ -8,26 +8,29 @@ class LearningPathRepository {
   }
 
   async findById(id) {
-        // Obtener el learningPath
-        const learningPath = await LearningPath.findOne({ _id: id });
-        if (!learningPath) return null;
-    
-        // Obtener las unidades asociadas
-        const units = await Unit.find({ _id: { $in: learningPath.unitIds } });
-    
-        // Para cada unidad, obtener las lecciones asociadas
-        for (const unit of units) {
-          unit.lessons = await Lesson.find({ _id: { $in: unit.lessonIds } });
-        }
-    
-        // Construir la respuesta enriquecida
-        return {
-          ...learningPath.toObject(),
-          units: units.map(unit => ({
-            ...unit.toObject(),
-            lessons: unit.lessons.map(lesson => lesson.toObject())
-          }))
-        };
+    // Obtener el learningPath
+    const learningPath = await LearningPath.findOne({ _id: id });
+    if (!learningPath) return null;
+
+    // Obtener las unidades asociadas
+    const units = await Unit.find({ _id: { $in: learningPath.unitIds } });
+
+    // Para cada unidad, obtener las lecciones asociadas
+    for (const unit of units) {
+      const lessons = await Lesson.find({ _id: { $in: unit.lessonIds || [] } }); // Asegurar que lessonIds no sea null
+      unit.lessons = (unit.lessonIds || []).map((id) =>
+        lessons.find((lesson) => lesson._id === id)
+      );
+    }
+
+    // Construir la respuesta enriquecida
+    return {
+      ...learningPath.toObject(),
+      units: units.map((unit) => ({
+        ...unit.toObject(),
+        lessons: (unit.lessons || []).map((lesson) => lesson?.toObject()), // Manejar posibles valores null
+      })),
+    };
   }
 
   async create(data) {

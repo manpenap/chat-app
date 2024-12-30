@@ -10,6 +10,11 @@ class LearningPathService {
     return await LearningPathRepository.findById(id);
   }
 
+  async getLearningPathByLevel(level) {
+    return await LearningPath.findOne({ name: level });
+    
+  }
+  
   async createLearningPath(data) {
     return await LearningPathRepository.create(data);
   }

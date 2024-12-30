@@ -1,11 +1,27 @@
-// models/User.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  password: String,
-  levelCode: String, // Nivel de inglés del usuario (e.g., 'A1', 'B1')
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  level: { type: String }, // Nivel de inglés por defecto
+  id_path: { type: String, required: true },
+}, { timestamps: true });
+
+// Middleware para encriptar la contraseña antes de guardar
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// Método para comparar contraseñas
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+export default User; // Exportación por defecto
