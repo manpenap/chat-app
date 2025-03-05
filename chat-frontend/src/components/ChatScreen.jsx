@@ -67,25 +67,26 @@ const ChatScreen = () => {
     }
   };
 
-  // Función para reproducir el texto en audio
-  const playText = async (text) => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/chat/tts`,
-        { text },
-        { responseType: "arraybuffer" }
-      );
-      const audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)();
-      const audioBuffer = await audioContext.decodeAudioData(response.data);
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-      source.start(0);
-    } catch (error) {
-      console.error("Error reproduciendo el texto:", error);
-    }
-  };
+// Función para reproducir el texto en audio usando la API del navegador
+const playText = (text) => {
+  // Verificar si el navegador soporta síntesis de voz
+  if (!("speechSynthesis" in window)) {
+    console.error("Este navegador no soporta síntesis de voz.");
+    return;
+  }
+
+  // Crear una instancia de SpeechSynthesisUtterance con el texto
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  // Configurar el idioma, velocidad y tono
+  utterance.lang = "en-US"; // Puedes ajustar según tus necesidades
+  utterance.rate = 1;       // Velocidad normal
+  utterance.pitch = 1;      // Tono normal
+
+  // Reproducir el audio
+  window.speechSynthesis.speak(utterance);
+};
+
 
   // Configuración y manejo de reconocimiento de voz
   const toggleListening = () => {
