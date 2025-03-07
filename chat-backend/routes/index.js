@@ -10,7 +10,6 @@ const router = express.Router();
 
 // Registrar rutas específicas
 router.use('/chat', chatRoutes);
-router.use('/learning-path', learningPathRoutes);
 router.use('/user',userRoutes);
 
 

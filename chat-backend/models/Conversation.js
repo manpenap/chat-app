@@ -1,16 +1,19 @@
+// models/Conversation.js
 import mongoose from 'mongoose';
 
 const ConversationSchema = new mongoose.Schema({
-  content: {
-    type: Array, // Suponiendo que la conversación es un arreglo de mensajes
+  topic: {
+    type: String,
     required: true,
   },
-  timestamp: {
+  content: {
+    type: Array,
+    required: true,
+  },
+  createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-const Conversation = mongoose.model('Conversation', ConversationSchema);
-
-export default Conversation;
+export default mongoose.model('Conversation', ConversationSchema);

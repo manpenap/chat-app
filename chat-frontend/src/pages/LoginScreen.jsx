@@ -25,9 +25,8 @@ const LoginScreen = () => {
       }
 
       // Redirigir a la ruta de aprendizaje
-      console.log("Redirigiendo a ruta de aprendizaje:", `/learning-path/${idPath}`);
 
-      navigate(`/learning-path/${idPath}`);
+      navigate(`/topic-selection`);
     } catch (error) {
       console.error("Error during login:", error);
     }

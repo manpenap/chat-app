@@ -1,13 +1,13 @@
-// routes/chatRoutes.js
+// chatRoutes.js
 import express from 'express';
-import { saveConversationController, getLastConversationController, processWelcomeMessage, processTextToSpeech, processChatMessage } from '../controllers/chatController.js';
+import chatController from '../controllers/chatController.js';
 
 const router = express.Router();
 
-router.post('/', processChatMessage);
-router.post('/save-conversation', saveConversationController);
-router.get('/last-conversation', getLastConversationController);
-router.get('/welcome', processWelcomeMessage);
-router.post('/tts', processTextToSpeech);
+router.get('/welcome', chatController.getWelcomeMessage);
+router.get('/last-conversation', chatController.getLastConversation);
+router.post('/save-conversation', chatController.saveConversation);
+router.post('/', chatController.handleChat);
 
 export default router;
+

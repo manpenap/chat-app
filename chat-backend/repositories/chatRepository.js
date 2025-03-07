@@ -1,14 +1,17 @@
-// repositories/chatRepository.js
+// chatRepository.js
 import Conversation from '../models/Conversation.js';
 
-export const getLastConversation = async () => {
-  return await Conversation.findOne().sort({ timestamp: -1 });
-};
+export async function saveConversationWithTopic(conversation, topic) {
+  if (!Array.isArray(conversation)) {
+    throw new Error('La conversación debe ser un array.');
+  }
+  const conv = new Conversation({
+    topic,
+    content: conversation,
+  });
+  return await conv.save();
+}
 
-export const saveConversation = async (content) => {
-    const newConversation = new Conversation({
-      content,
-      timestamp: new Date(),
-    });
-    return await newConversation.save();
-  };
+export async function getLastConversationByTopic(topic) {
+  return await Conversation.findOne({ topic }).sort({ createdAt: -1 });
+}

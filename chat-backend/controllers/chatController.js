@@ -1,100 +1,72 @@
-// controllers/chatController.js
-import { handleChatMessage, handleTextToSpeech, fetchLastConversation, handleSaveConversation } from '../services/chatService.js';
-// controllers/chatController.js
-import { callOpenAIChat } from '../services/externalApiService.js';
+// chatController.js
+import * as chatService from '../services/chatService.js';
 
-
-export const processChatMessage = async (req, res) => {
+export const getWelcomeMessage = async (req, res) => {
   try {
-    const { message, isLesson, lessonDetails, isInitialMessage, chatHistory } = req.body;
-    const userLevel = req.user?.level || 'A1'; // Asegúrate de que el nivel del usuario esté disponible
-
-    if (!message || message.trim().length === 0) {
-      return res.status(400).json({ error: "Mensaje vacío o inválido recibido." });
-    }
-    
-    // Verificar si es el mensaje inicial
-    if (isInitialMessage) {
-      const initialMessage = isLesson
-        ? `Hello! Welcome to your lesson on ${lessonDetails?.name ? ` on ${lessonDetails.name}` : ''}. Let's get started!`
-        : "Hello! Welcome to our English practice session. How can I help you today?";
-      
-      return res.status(200).json({ botMessage: initialMessage });
+    const { topic, level } = req.query;
+    if (!topic || !level) {
+      return res.status(400).json({ error: 'Los parámetros "topic" y "level" son requeridos.' });
     }
 
-    // Procesar el mensaje normalmente
-    const botMessage = await handleChatMessage(message, isLesson, userLevel, lessonDetails, chatHistory);
-    res.status(200).json({ botMessage });
+    let welcomeMessage = '';
+    if (topic === 'free topic') {
+      welcomeMessage = "Welcome! How are you today? What would you like to talk about?";
+    } else {
+      welcomeMessage = `Welcome! Are yo ready to talk about "${topic}"?`;
+    }
+
+    // Puedes incluir lógica adicional o incluso llamar a chatService si deseas un mensaje más elaborado.
+    res.json({ botMessage: welcomeMessage });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error obteniendo el mensaje de bienvenida:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
 
-
-
-
-export const getLastConversationController = async (req, res) => {
+export const getLastConversation = async (req, res) => {
   try {
-    const conversation = await fetchLastConversation();
-
-    if (!conversation) {
-      return res.status(404).json({ message: 'No hay conversaciones previas disponibles.' });
+    const { topic } = req.query;
+    if (!topic) {
+      return res.status(400).json({ error: 'El parámetro "topic" es requerido.' });
     }
-
-    res.status(200).json({ conversation });
+    const conversation = await chatService.fetchLastConversation(topic);
+    // En lugar de devolver 404, devolvemos un array vacío si no se encontró conversación.
+    res.json({ conversation: conversation || [] });
   } catch (error) {
-    console.error('Error al obtener la última conversación:', error);
-    res.status(500).json({ error: 'Error al obtener la última conversación.' });
+    console.error('Error obteniendo la última conversación:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
 
-// Exportar todos los controladores necesarios
-export const saveConversationController = async (req, res) => {
+export const saveConversation = async (req, res) => {
   try {
-    const { conversation } = req.body;
-
-    if (!conversation || !Array.isArray(conversation)) {
-      return res.status(400).json({ error: 'Conversación inválida o faltante.' });
+    const { conversation, topic } = req.body;
+    if (!conversation || !topic) {
+      return res.status(400).json({ error: 'Se requieren "conversation" y "topic".' });
     }
-
-    const result = await handleSaveConversation(conversation);
-    res.status(200).json({ message: 'Conversación guardada exitosamente.', data: result });
+    const saved = await chatService.handleSaveConversation(conversation, topic);
+    res.json({ saved });
   } catch (error) {
     console.error('Error al guardar la conversación:', error);
-    res.status(500).json({ error: 'Error al guardar la conversación.' });
+    res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
 
-export const processWelcomeMessage = async (req, res) => {
-  const { level = 'A1' } = req.query; // Nivel predeterminado: A1
-
+export const handleChat = async (req, res) => {
   try {
-    const messages = [
-      {
-        role: 'system',
-        content: `You are an English tutor. Greet the student according to their level: ${level}.`,
-      },
-    ];
-    const botMessage = await callOpenAIChat(messages);
-    res.status(200).json({ botMessage });
+    const { message, topic, userLevel, chatHistory } = req.body;
+    const botResponse = await chatService.handleChatMessage(message, topic, userLevel, chatHistory);
+    res.json({ botMessage: botResponse });
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener el saludo inicial' });
+    console.error('Error manejando el chat:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
 
-export const processTextToSpeech = async (req, res) => {
-  try {
-    const { text } = req.body;
-
-    if (!text) {
-      return res.status(400).json({ error: 'Texto requerido para síntesis de voz.' });
-    }
-
-    const audioContent = await handleTextToSpeech(text);
-    res.set('Content-Type', 'audio/mp3');
-    res.send(audioContent);
-  } catch (error) {
-    console.error('Error en TTS:', error);
-    res.status(500).json({ error: 'Error en el servicio de TTS.' });
-  }
+// Exportar todas las funciones en un objeto por defecto
+export default {
+  getWelcomeMessage,
+  getLastConversation,
+  saveConversation,
+  handleChat,
 };

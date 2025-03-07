@@ -1,49 +1,42 @@
 // services/chatService.js
 import { callOpenAIChat, synthesizeSpeech } from './externalApiService.js';
-import { getLastConversation, saveConversation } from '../repositories/chatRepository.js';
+import { getLastConversationByTopic, saveConversationWithTopic } from '../repositories/chatRepository.js';
 
-export const handleChatMessage = async (message, isLesson, userLevel, lessonDetails, chatHistory) => {
+export const handleChatMessage = async (message, topic, userLevel, chatHistory) => {
   let systemMessage;
 
-  if (isLesson) {
-    // Genera un prompt personalizado según el tipo de lección
-    const { type, name, content, unitObjective, pathLevel } = lessonDetails;
-
+  if (topic && topic !== 'free topic') {
     systemMessage = `
-      You are an English tutor guiding a student in their learning path.
-      Adjust your language complexity according to their level: ${userLevel}.
-      Learning Path Level: ${pathLevel}.
-      Unit Objective: "${unitObjective}".
-      Lesson Type: "${type}".
-      
-
-      ${
-        type === 'introductory'
-          ? `Provide a general introduction to the topic of the unit.`
-          : type === 'grammar'
-          ? `Explain grammar concepts about "${name}" based on this context: "${content?.text}". Encourage the student to participate and correct mistakes as necessary.`
-          : type === 'vocabulary'
-          ? `Teach vocabulary related to "${name}" based on this context: "${content?.text}". Use examples and ask the student to create their own sentences.`
-          : type === 'evaluation'
-          ? `Prepare an evaluation to assess the student's understanding of the unit topics. Use questions that test their knowledge and provide feedback.`
-          : `Provide guidance relevant to the student's learning path.`
-      }
-
-        Current conversation context:
-        ${chatHistory.map((entry) => `${entry.sender}: ${entry.message}`).join('\n')}
-
-      
-
-        Always progress towards the lesson's objective and avoid unnecessary repetition.
-
-        Important:
-              - Do not include emoticons, emojis, asterisks, or any special symbols in your responses.
-              - Respond clearly and naturally, as the output will be converted to speech.
+      You are an English tutor guiding a conversation on the topic "${topic}".
+      Adjust your language complexity according to the student's level: ${userLevel}.
+      Engage in a discussion that remains focused on "${topic}".
+      When the student makes very evident grammatical mistakes, provide corrections and offer additional feedback if requested.
+      At the beginning of a new conversation, greet the student and ask if they are ready to talk about "${topic}", or, if resuming a previous conversation, continue from where you left off.
+      Encourage active participation and ensure that the conversation stays on topic.
+      Do not include emoticons, emojis, asterisks, or any special symbols in your responses.
+      Respond clearly and naturally, as the output will be converted to speech.
     `;
   } else {
-    // Default prompt for free conversation
-    systemMessage = `You are an English tutor assisting with a free conversation practice. Suggest a topic suitable for their level: ${userLevel}. Avoid repeating greetings unnecessarily.Do not include emoticons, emojis, asterisks, or any special symbols in your responses. Respond clearly and naturally, as the output will be converted to speech. `;
+    // Caso "Tema Libre"
+    systemMessage = `
+      You are an English tutor facilitating a free conversation practice.
+      Allow the student to choose topics during the conversation while providing guidance.
+      When very evident grammatical errors occur, correct them and offer feedback if requested.
+      At the beginning of a new conversation, greet the student and ask if they are ready to talk freely, or resume the conversation if applicable.
+      Avoid unnecessary repetition of greetings.
+      Do not include emoticons, emojis, asterisks, or any special symbols in your responses.
+      Respond clearly and naturally, as the output will be converted to speech.
+    `;
   }
+
+  // Agregar el historial de la conversación al prompt
+  systemMessage += `
+  
+  Current conversation context:
+  ${chatHistory.map((entry) => `${entry.sender}: ${entry.message}`).join('\n')}
+  
+  Always progress the conversation appropriately and ensure clarity in communication.
+  `;
 
   console.log('System Prompt:', systemMessage);
 
@@ -52,25 +45,23 @@ export const handleChatMessage = async (message, isLesson, userLevel, lessonDeta
     { role: 'user', content: message },
   ];
 
-  // Llama a la API de OpenAI para generar la respuesta
   return await callOpenAIChat(messages);
 };
-
 
 export const handleTextToSpeech = async (text) => {
   return await synthesizeSpeech(text);
 };
 
-
-export const fetchLastConversation = async () => {
-  const lastConversation = await getLastConversation();
+// Recupera la última conversación para un tópico específico
+export const fetchLastConversation = async (topic) => {
+  const lastConversation = await getLastConversationByTopic(topic);
   return lastConversation ? lastConversation.content : null;
 };
 
-export const handleSaveConversation = async (conversation) => {
+// Guarda la conversación actual asociándola al tópico seleccionado
+export const handleSaveConversation = async (conversation, topic) => {
   if (!conversation || !Array.isArray(conversation)) {
     throw new Error('Conversación inválida.');
   }
-
-  return await saveConversation(conversation);
+  return await saveConversationWithTopic(conversation, topic);
 };

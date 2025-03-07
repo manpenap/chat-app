@@ -19,31 +19,37 @@ if (recognition) {
 }
 
 const ChatScreen = () => {
-  const [welcomeMessage, setWelcomeMessage] = useState("");
-  const [listening, setListening] = useState(false);
-  const [chatLog, setChatLog] = useState([]);
-  const [inputValue, setInputValue] = useState("");
-  const [transcriptBuffer, setTranscriptBuffer] = useState("");
-  const lastFinalTranscript = useRef("");
-  const location = useLocation();
-  const { lesson } = location.state || {};
+  const { topic } = useLocation().state || {};
 
-  if (!lesson) {
-    return <p>No se proporcionaron datos de la lección.</p>;
+  if (!topic) {
+    return <p>No se proporcionaron datos del tópico.</p>;
   }
 
-  const audioPlayedRef = useRef(false);
+  const [chatLog, setChatLog] = useState([]);
+  const [listening, setListening] = useState(false);
+  const [transcriptBuffer, setTranscriptBuffer] = useState("");
+  const [previousConversation, setPreviousConversation] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [decisionMade, setDecisionMade] = useState(false); // Nuevo estado para controlar la decisión
   const welcomeMessageAdded = useRef(false);
 
-  // Cargar conversación previa al iniciar el componente
+  // Obtener conversación previa
   useEffect(() => {
     const fetchPreviousConversation = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/chat/last-conversation"
-        );
-        if (response.data && response.data.conversation) {
-          setChatLog(response.data.conversation); // Cargar la conversación previa
+        const response = await axios.get(`${API_URL}/chat/last-conversation`, {
+          params: { topic },
+        });
+        if (
+          response.data &&
+          response.data.conversation &&
+          response.data.conversation.length > 0
+        ) {
+          setPreviousConversation(response.data.conversation);
+          setShowModal(true);
+        } else {
+          // Si no hay conversación previa, marcamos la decisión como tomada para seguir el flujo
+          setDecisionMade(true);
         }
       } catch (error) {
         console.error("Error al cargar la conversación previa:", error);
@@ -51,62 +57,72 @@ const ChatScreen = () => {
     };
 
     fetchPreviousConversation();
-  }, []);
+  }, [topic]);
+
+  // Funciones para manejar la decisión del modal
+  const handleContinueConversation = () => {
+    setChatLog(previousConversation);
+    setShowModal(false);
+    setDecisionMade(true);
+    // Inyectar un saludo de "bienvenida de vuelta"
+    const welcomeBack = `Welcome back! Ready to continue talking about "${topic}"?`;
+    // Agregar el saludo al chat y reproducirlo en audio
+    setChatLog(prevLog => [...prevLog, { sender: "bot", message: welcomeBack }]);
+    playText(welcomeBack);
+  };
+  
+
+  const handleNewConversation = () => {
+    setChatLog([]);
+    setShowModal(false);
+    setDecisionMade(true); // Se marca la decisión
+  };
 
   // Guardar conversación en la base de datos
   const handleSaveConversation = async () => {
     try {
-      await axios.post("http://localhost:5000/api/chat/save-conversation", {
+      await axios.post(`${API_URL}/chat/save-conversation`, {
         conversation: chatLog,
+        topic,
       });
       alert("Conversación guardada exitosamente.");
-      window.location.href = "/home"; // Redirigir al Home
+      window.location.href = "/topic-selection";
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
       alert("No se pudo guardar la conversación.");
+      throw error;
     }
   };
 
-// Función para reproducir el texto en audio usando la API del navegador
-const playText = (text) => {
-  // Verificar si el navegador soporta síntesis de voz
-  if (!("speechSynthesis" in window)) {
-    console.error("Este navegador no soporta síntesis de voz.");
-    return;
-  }
-
-  // Crear una instancia de SpeechSynthesisUtterance con el texto
-  const utterance = new SpeechSynthesisUtterance(text);
-
-  // Configurar el idioma, velocidad y tono
-  utterance.lang = "en-US"; // Puedes ajustar según tus necesidades
-  utterance.rate = 1;       // Velocidad normal
-  utterance.pitch = 1;      // Tono normal
-
-  // Reproducir el audio
-  window.speechSynthesis.speak(utterance);
-};
-
-
-  // Configuración y manejo de reconocimiento de voz
-  const toggleListening = () => {
-    if (!recognition) {
-      console.log(
-        "El reconocimiento de voz no es compatible con este navegador."
-      );
+  // Reproducir texto en audio
+  const playText = (text) => {
+    if (!("speechSynthesis" in window)) {
+      console.error("Este navegador no soporta síntesis de voz.");
       return;
     }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  };
 
+  // Manejo del reconocimiento de voz
+  const toggleListening = () => {
+    if (!recognition) {
+      console.log("El reconocimiento de voz no es compatible con este navegador.");
+      return;
+    }
     if (!listening) {
       console.log("Iniciando reconocimiento de voz...");
       recognition.start();
       setListening(true);
-      setTranscriptBuffer(""); // Limpiar el buffer
+      setTranscriptBuffer("");
     } else {
       console.log("Deteniendo reconocimiento de voz...");
-      recognition.stop(); // Detener reconocimiento
+      recognition.stop();
       setListening(false);
-      processTranscript(); // Procesar transcripción al detener
+      processTranscript();
     }
   };
 
@@ -118,33 +134,17 @@ const playText = (text) => {
         { sender: "user", message: transcriptBuffer.trim() },
       ]);
       sendMessageToBot(transcriptBuffer.trim());
-      setTranscriptBuffer(""); // Limpiar el buffer
+      setTranscriptBuffer("");
     }
   };
 
+  // Enviar mensaje al bot
   const sendMessageToBot = async (message) => {
     try {
-      const lastMessage =
-        chatLog.length > 0 ? chatLog[chatLog.length - 1].message : "";
-
-      if (message === lastMessage) {
-        console.warn("Mensaje duplicado detectado, no se enviará al bot.");
-        return;
-      }
-
       const payload = {
         message,
-        isLesson: !!lesson,
+        topic,
         userLevel: "A1",
-        lessonDetails: lesson
-          ? {
-              type: lesson.type,
-              name: lesson.name,
-              content: lesson.content?.text || "",
-              unitObjective: lesson.unit_objective,
-              pathLevel: lesson.pathLevel,
-            }
-          : null,
         isInitialMessage: chatLog.length === 0,
         chatHistory: chatLog,
       };
@@ -154,13 +154,22 @@ const playText = (text) => {
       const response = await axios.post(`${API_URL}/chat`, payload);
       const botReply = response.data.botMessage;
 
-      // Verificar si la respuesta del bot es repetitiva
       if (
         chatLog.length > 0 &&
         chatLog[chatLog.length - 1].message === botReply
       ) {
         console.warn("Respuesta repetitiva detectada. Ignorando...");
         return;
+      }
+
+      // Si es el primer mensaje y se inicia una nueva conversación, el bot saluda
+      if (chatLog.length === 0) {
+        const welcome = `Welcome! Are you ready to talk about "${topic}"?`;
+        setChatLog((prevLog) => [
+          ...prevLog,
+          { sender: "bot", message: welcome },
+        ]);
+        playText(welcome);
       }
 
       setChatLog((prevLog) => [
@@ -173,6 +182,7 @@ const playText = (text) => {
     }
   };
 
+  // Configuración del reconocimiento de voz
   useEffect(() => {
     if (recognition) {
       recognition.onresult = (event) => {
@@ -181,50 +191,16 @@ const playText = (text) => {
 
         for (const result of event.results) {
           if (result.isFinal) {
-            const newTranscript = result[0].transcript.trim();
-            if (!lastFinalTranscript.current.includes(newTranscript)) {
-              finalTranscript += newTranscript + " ";
-              lastFinalTranscript.current += newTranscript + " ";
-            }
+            finalTranscript += result[0].transcript.trim() + " ";
           } else {
             interimTranscript += result[0].transcript;
           }
         }
 
-        // Asegurar que incluso frases cortas se agreguen al buffer
-        if (finalTranscript.trim()) {
-          setTranscriptBuffer(
-            (prevBuffer) => prevBuffer + finalTranscript.trim()
-          );
-        } else {
-          console.warn("Se detectó un resultado final muy corto pero válido.");
+        if (finalTranscript) {
+          setTranscriptBuffer(finalTranscript.trim());
         }
-
         console.log("Resultados parciales (interim):", interimTranscript);
-      };
-
-      const processTranscript = () => {
-        const finalMessage =
-          lastFinalTranscript.current.trim() || transcriptBuffer.trim();
-
-        if (finalMessage) {
-          console.log("Procesando transcripción válida:", finalMessage);
-
-          setChatLog((prevLog) => [
-            ...prevLog,
-            { sender: "user", message: finalMessage },
-          ]);
-
-          sendMessageToBot(finalMessage);
-
-          // Limpiar buffer y referencia después de procesar
-          lastFinalTranscript.current = "";
-          setTranscriptBuffer("");
-        } else {
-          console.warn(
-            "No se encontró ninguna transcripción válida para procesar."
-          );
-        }
       };
 
       recognition.onerror = (event) => {
@@ -233,46 +209,63 @@ const playText = (text) => {
 
       recognition.onend = () => {
         console.log("Reconocimiento de voz detenido.");
-
-        // Procesar datos pendientes antes de reiniciar
-        if (lastFinalTranscript.current.trim() || transcriptBuffer.trim()) {
-          console.log("Procesando datos pendientes antes de reiniciar.");
-          processTranscript();
-        }
-
         if (listening) {
-          recognition.start(); // Reinicia si sigue activo
+          recognition.start();
         }
       };
     }
   }, [listening]);
 
+  // Obtener saludo de bienvenida solo después de que se haya tomado la decisión
   useEffect(() => {
     const fetchWelcomeMessage = async () => {
       try {
         const response = await axios.get(`${API_URL}/chat/welcome`, {
-          params: { level: "A1" },
+          params: { topic, level: "A1" },
         });
         const message = response.data.botMessage;
 
-        // Agregar el saludo inicial al chat si no se ha añadido antes
-        if (!welcomeMessageAdded.current) {
-          setChatLog((prevLog) => [...prevLog, { sender: "bot", message }]);
+        if (chatLog.length === 0 && !welcomeMessageAdded.current) {
+          setChatLog((prevLog) => [
+            ...prevLog,
+            { sender: "bot", message },
+          ]);
           playText(message);
-          welcomeMessageAdded.current = true; // Marcar como añadido
+          welcomeMessageAdded.current = true;
         }
       } catch (error) {
         console.error("Error obteniendo el saludo inicial:", error);
       }
     };
 
-    fetchWelcomeMessage();
-  }, []);
+    if (decisionMade && chatLog.length === 0) {
+      fetchWelcomeMessage();
+    }
+  }, [topic, chatLog, decisionMade]);
 
   return (
     <div>
       <h1>Chat Screen</h1>
-      {console.log("Estado del chatLog:", chatLog)}
+
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Conversación previa encontrada</h2>
+            <p>
+              ¿Deseas continuar la conversación anterior o iniciar una nueva?
+            </p>
+            <div className="modal-buttons">
+              <button onClick={handleContinueConversation}>
+                Continuar
+              </button>
+              <button onClick={handleNewConversation}>
+                Nueva conversación
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="chat-log">
         {chatLog.map((entry, index) => (
           <p
@@ -286,8 +279,8 @@ const playText = (text) => {
       </div>
 
       <ChatCloseButton
-        conversationData={chatLog} // Pasar el historial actual al botón de cierre
-        onReturnHome={handleSaveConversation} // Guardar y redirigir al Home
+        conversationData={chatLog}
+        onReturnHome={handleSaveConversation}
       />
 
       <button onClick={toggleListening}>

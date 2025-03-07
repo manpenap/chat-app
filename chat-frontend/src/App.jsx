@@ -6,12 +6,14 @@ import UserProfile from './components/UserProfile';
 import LearningPath from './pages/LearningPath';
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
+import TopicSelection from './pages/TopicSelection';
 
 const AppRoutes = () => {
   let routes = useRoutes([
     { path: '/', element: <LoginScreen /> },
     { path: "/practice", element: <ChatScreen chatType="practice" userLevel="A1" /> }, // Adjust userLevel if needed
     { path: "/profile", element: <UserProfile /> },
+    { path: "/topic-selection", element: <TopicSelection /> },
     { path: "/register", element: <RegisterScreen /> },
     { path: "/chatscreen", element: <ChatScreen /> },
     { path: "/evaluation", element: <ChatScreen chatType="evaluation" userLevel="A1" /> },
