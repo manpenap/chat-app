@@ -244,21 +244,21 @@ const ChatScreen = () => {
   }, [topic, chatLog, decisionMade]);
 
   return (
-    <div>
-      <h1>Chat Screen</h1>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
+      <h1 className="text-3xl text-textSecondColor">Chat Screen</h1>
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal">
-            <h2>Conversación previa encontrada</h2>
+          <div className="modal flex flex-col items-center text-textMainColor text-lg">
+            <h2 className="">Conversación previa encontrada</h2>
             <p>
               ¿Deseas continuar la conversación anterior o iniciar una nueva?
             </p>
-            <div className="modal-buttons">
-              <button onClick={handleContinueConversation}>
+            <div className="modal-buttons flex gap-4 justify-center w-full ">
+              <button className="w-1/3 text-sm bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200" onClick={handleContinueConversation}>
                 Continuar
               </button>
-              <button onClick={handleNewConversation}>
+              <button className="w-1/3 text-sm border border-buttonColor text-buttonColor py-2 rounded hover:bg-blue-50 transition duration-200" onClick={handleNewConversation}>
                 Nueva conversación
               </button>
             </div>
@@ -266,26 +266,32 @@ const ChatScreen = () => {
         </div>
       )}
 
-      <div className="chat-log">
+      <div className="chat-log text-textMainColor text-lg mb-32 max-w-lg w-full">
         {chatLog.map((entry, index) => (
           <p
             key={index}
-            className={entry.sender === "user" ? "user-message" : "bot-message"}
+            className={`${entry.sender === "user" ? "user-message text-end bg-backgroundAlternative my-2 ps-20 pe-4" : "bot-message text-start bg-backgroundLight my-2 ps-4 pe-20"} py-4 rounded-lg flex flex-col`}
           >
-            <strong>{entry.sender === "user" ? "Alumno: " : "Bot: "}</strong>
+            <strong className="text-sm">{entry.sender === "user" ? "You: " : "System: "}</strong>
             {entry.message}
           </p>
         ))}
       </div>
 
-      <ChatCloseButton
-        conversationData={chatLog}
-        onReturnHome={handleSaveConversation}
-      />
+      <div className="fixed bottom-0 w-full flex justify-center items-center gap-4 bg-backgroundAlternative py-4 px-5">
+        <div >
+          <ChatCloseButton
+            conversationData={chatLog}
+            onReturnHome={handleSaveConversation}
+          />
+        </div>
 
-      <button onClick={toggleListening}>
-        {listening ? "Detener" : "Hablar"}
-      </button>
+
+        <button className = {`${showModal ? 'hidden' : 'block'}  bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover`} onClick={toggleListening}>
+          {listening ? "Detener" : "Hablar"}
+        </button>
+      </div>
+
     </div>
   );
 };

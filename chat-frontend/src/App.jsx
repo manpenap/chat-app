@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRoutes, BrowserRouter } from 'react-router-dom';
-import HomeScreen from './components/HomeScreen';
+import HomeScreen from './pages/HomeScreen';
 import ChatScreen from './components/ChatScreen';
 import UserProfile from './components/UserProfile';
 import LearningPath from './pages/LearningPath';
@@ -10,7 +10,8 @@ import TopicSelection from './pages/TopicSelection';
 
 const AppRoutes = () => {
   let routes = useRoutes([
-    { path: '/', element: <LoginScreen /> },
+    { path: '/', element: <HomeScreen /> },
+    { path: '/login', element: <LoginScreen /> },
     { path: "/practice", element: <ChatScreen chatType="practice" userLevel="A1" /> }, // Adjust userLevel if needed
     { path: "/profile", element: <UserProfile /> },
     { path: "/topic-selection", element: <TopicSelection /> },

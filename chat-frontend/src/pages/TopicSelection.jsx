@@ -38,18 +38,23 @@ const TopicSelection = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Hola, {user.name}</h1>
-      <h2>¿De qué tema te gustaría hablar hoy?</h2>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {topics.map((topic) => (
-          <li key={topic} style={{ margin: '10px 0' }}>
-            <button onClick={() => handleTopicSelect(topic)}>
-              {topic}
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className='min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5'>
+      <div className='text-center text-textMainColor text-3xl font-bold mt-16 mb-8 '>
+        <h1>Hola, {user.name}</h1>
+        <h2>¿De qué tema te gustaría hablar hoy?</h2>
+      </div>
+
+      <div className='max-w-xs w-full text-center text-2xl'>
+        <ul className=''>
+          {topics.map((topic) => (
+            <li key={topic} style={{ margin: '10px 0' }}>
+              <button className='w-full border py-4 rounded-md text-textMainColor border-buttonColor hover:bg-textSecondColor' onClick={() => handleTopicSelect(topic)}>
+                {topic}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
