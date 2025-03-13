@@ -11,6 +11,8 @@ const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
+
+
 if (recognition) {
   console.log("SpeechRecognition está disponible");
   recognition.lang = "en-US";
@@ -20,6 +22,7 @@ if (recognition) {
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
+  
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
@@ -32,6 +35,36 @@ const ChatScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [decisionMade, setDecisionMade] = useState(false); // Nuevo estado para controlar la decisión
   const welcomeMessageAdded = useRef(false);
+  const [translations, setTranslations] = useState({});
+
+  const chatContainerRef = useRef(null);
+
+  const handleTranslate = async (index, message) => {
+    // Si ya se tradujo este mensaje, no hacemos nada (o podríamos implementar toggle)
+    if (translations[index]) return;
+    try {
+      const response = await axios.get(
+        "https://api.mymemory.translated.net/get",
+        {
+          params: {
+            q: message,
+            langpair: "en|es",
+          },
+        }
+      );
+      const translatedText = response.data.responseData.translatedText;
+      setTranslations((prev) => ({ ...prev, [index]: translatedText }));
+    } catch (error) {
+      console.error("Error al traducir:", error);
+    }
+  };
+
+  // Función para capitalizar la primera letra de cada oración
+  const capitalizeSentences = (text) => {
+    return text.replace(/(?:^|\.\s+|\?\s+|!\s+)([a-z])/g, (match, p1) =>
+      match.replace(p1, p1.toUpperCase())
+    );
+  };
 
   // Obtener conversación previa
   useEffect(() => {
@@ -61,15 +94,26 @@ const ChatScreen = () => {
 
   // Funciones para manejar la decisión del modal
   const handleContinueConversation = () => {
-    setChatLog(previousConversation);
     setShowModal(false);
     setDecisionMade(true);
-    // Inyectar un saludo de "bienvenida de vuelta"
+    // Combinar la conversación previa con el saludo de bienvenida
     const welcomeBack = `Welcome back! Ready to continue talking about "${topic}"?`;
-    // Agregar el saludo al chat y reproducirlo en audio
-    setChatLog(prevLog => [...prevLog, { sender: "bot", message: welcomeBack }]);
+    const updatedLog = previousConversation
+      ? [...previousConversation, { sender: "bot", message: welcomeBack }]
+      : [{ sender: "bot", message: welcomeBack }];
+    setChatLog(updatedLog);
     playText(welcomeBack);
   };
+  
+  // Efecto que se dispara cuando chatLog cambia y se ha tomado la decisión
+  useEffect(() => {
+    if (decisionMade && chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [chatLog, decisionMade]);
   
 
   const handleNewConversation = () => {
@@ -110,7 +154,9 @@ const ChatScreen = () => {
   // Manejo del reconocimiento de voz
   const toggleListening = () => {
     if (!recognition) {
-      console.log("El reconocimiento de voz no es compatible con este navegador.");
+      console.log(
+        "El reconocimiento de voz no es compatible con este navegador."
+      );
       return;
     }
     if (!listening) {
@@ -128,10 +174,11 @@ const ChatScreen = () => {
 
   const processTranscript = () => {
     if (transcriptBuffer) {
+      const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
       console.log("Procesando transcripción del buffer:", transcriptBuffer);
       setChatLog((prevLog) => [
         ...prevLog,
-        { sender: "user", message: transcriptBuffer.trim() },
+        { sender: "user", message: formattedMessage },
       ]);
       sendMessageToBot(transcriptBuffer.trim());
       setTranscriptBuffer("");
@@ -226,10 +273,7 @@ const ChatScreen = () => {
         const message = response.data.botMessage;
 
         if (chatLog.length === 0 && !welcomeMessageAdded.current) {
-          setChatLog((prevLog) => [
-            ...prevLog,
-            { sender: "bot", message },
-          ]);
+          setChatLog((prevLog) => [...prevLog, { sender: "bot", message }]);
           playText(message);
           welcomeMessageAdded.current = true;
         }
@@ -255,10 +299,16 @@ const ChatScreen = () => {
               ¿Deseas continuar la conversación anterior o iniciar una nueva?
             </p>
             <div className="modal-buttons flex gap-4 justify-center w-full ">
-              <button className="w-1/3 text-sm bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200" onClick={handleContinueConversation}>
+              <button
+                className="w-1/3 text-sm bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200"
+                onClick={handleContinueConversation}
+              >
                 Continuar
               </button>
-              <button className="w-1/3 text-sm border border-buttonColor text-buttonColor py-2 rounded hover:bg-blue-50 transition duration-200" onClick={handleNewConversation}>
+              <button
+                className="w-1/3 text-sm border border-buttonColor text-buttonColor py-2 rounded hover:bg-blue-50 transition duration-200"
+                onClick={handleNewConversation}
+              >
                 Nueva conversación
               </button>
             </div>
@@ -266,32 +316,78 @@ const ChatScreen = () => {
         </div>
       )}
 
-      <div className="chat-log text-textMainColor text-lg mb-32 max-w-lg w-full">
+      <div
+        ref={chatContainerRef}
+        className="chat-log text-textMainColor text-lg mb-32 max-w-lg w-full overflow-y-auto"
+        style={{ maxHeight: "70vh",    
+          scrollbarWidth: "none",    
+          msOverflowStyle: "none"  }} 
+      >
         {chatLog.map((entry, index) => (
           <p
             key={index}
-            className={`${entry.sender === "user" ? "user-message text-end bg-backgroundAlternative my-2 ps-20 pe-4" : "bot-message text-start bg-backgroundLight my-2 ps-4 pe-20"} py-4 rounded-lg flex flex-col`}
+            className={`${
+              entry.sender === "user"
+                ? "user-message text-end bg-backgroundAlternative my-2 ps-4 pe-4"
+                : "bot-message text-start bg-backgroundLight my-2 ps-4 pe-4 relative"
+            } py-4 rounded-lg flex flex-col`}
           >
-            <strong className="text-sm">{entry.sender === "user" ? "You: " : "System: "}</strong>
+            <strong className="text-sm italic">
+              {entry.sender === "user" ? "You: " : "System: "}
+            </strong>
             {entry.message}
+
+            <div className="mt-2 flex justify-between">
+              {entry.sender !== "user" && (
+                <div className="flex items-start">
+                  <button
+                    className="text-xs text-textSecondColor italic hover:text-buttonColor"
+                    onClick={() => playText(entry.message)}
+                    title="Reproducir audio"
+                  >
+                    🔊 Listen again!
+                  </button>
+                </div>
+              )}
+
+              {/* Ejemplo combinado con el botón Traducir (si ya lo implementaste) */}
+              {entry.sender !== "user" && (
+                <div className="flex flex-col items-end">
+                  <button
+                    className="text-xs text-textSecondColor italic hover:text-buttonColor"
+                    onClick={() => handleTranslate(index, entry.message)}
+                  >
+                    Traducir
+                  </button>
+                  {translations[index] && (
+                    <p className="text-xs text-textMainColor italic mt-1">
+                      {translations[index]}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </p>
         ))}
       </div>
 
       <div className="fixed bottom-0 w-full flex justify-center items-center gap-4 bg-backgroundAlternative py-4 px-5">
-        <div >
+        <div>
           <ChatCloseButton
             conversationData={chatLog}
             onReturnHome={handleSaveConversation}
           />
         </div>
 
-
-        <button className = {`${showModal ? 'hidden' : 'block'}  bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover`} onClick={toggleListening}>
+        <button
+          className={`${
+            showModal ? "hidden" : "block"
+          }  bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover`}
+          onClick={toggleListening}
+        >
           {listening ? "Detener" : "Hablar"}
         </button>
       </div>
-
     </div>
   );
 };
