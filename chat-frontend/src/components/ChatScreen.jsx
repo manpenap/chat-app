@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 import ChatCloseButton from "./ChatCloseButton";
+import GrammarIndicator from "./GrammarIndicator";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -10,8 +11,6 @@ const API_URL = "http://localhost:5000/api";
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-
-
 
 if (recognition) {
   console.log("SpeechRecognition está disponible");
@@ -22,7 +21,6 @@ if (recognition) {
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
-  
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
@@ -104,7 +102,7 @@ const ChatScreen = () => {
     setChatLog(updatedLog);
     playText(welcomeBack);
   };
-  
+
   // Efecto que se dispara cuando chatLog cambia y se ha tomado la decisión
   useEffect(() => {
     if (decisionMade && chatContainerRef.current) {
@@ -114,7 +112,6 @@ const ChatScreen = () => {
       });
     }
   }, [chatLog, decisionMade]);
-  
 
   const handleNewConversation = () => {
     setChatLog([]);
@@ -319,16 +316,18 @@ const ChatScreen = () => {
       <div
         ref={chatContainerRef}
         className="chat-log text-textMainColor text-lg mb-32 max-w-lg w-full overflow-y-auto"
-        style={{ maxHeight: "70vh",    
-          scrollbarWidth: "none",    
-          msOverflowStyle: "none"  }} 
+        style={{
+          maxHeight: "70vh",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
       >
         {chatLog.map((entry, index) => (
           <p
             key={index}
             className={`${
               entry.sender === "user"
-                ? "user-message text-end bg-backgroundAlternative my-2 ps-4 pe-4"
+                ? "user-message text-end bg-backgroundAlternative my-2 ps-4 pe-4 relative"
                 : "bot-message text-start bg-backgroundLight my-2 ps-4 pe-4 relative"
             } py-4 rounded-lg flex flex-col`}
           >
@@ -360,11 +359,15 @@ const ChatScreen = () => {
                     Traducir
                   </button>
                   {translations[index] && (
-                    <p className="text-xs text-textMainColor italic mt-1">
+                    <p className="text-xs text-textMainColor italic mt-4">
                       {translations[index]}
                     </p>
                   )}
                 </div>
+              )}
+
+              {entry.sender === "user" && (
+                <GrammarIndicator message={entry.message} />
               )}
             </div>
           </p>
