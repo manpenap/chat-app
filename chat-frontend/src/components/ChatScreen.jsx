@@ -11,10 +11,7 @@ const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
-
-
 if (recognition) {
-  console.log("SpeechRecognition está disponible");
   recognition.lang = "en-US";
   recognition.continuous = true;
   recognition.interimResults = true;
@@ -22,7 +19,6 @@ if (recognition) {
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
-  
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
@@ -104,7 +100,7 @@ const ChatScreen = () => {
     setChatLog(updatedLog);
     playText(welcomeBack);
   };
-  
+
   // Efecto que se dispara cuando chatLog cambia y se ha tomado la decisión
   useEffect(() => {
     if (decisionMade && chatContainerRef.current) {
@@ -114,7 +110,6 @@ const ChatScreen = () => {
       });
     }
   }, [chatLog, decisionMade]);
-  
 
   const handleNewConversation = () => {
     setChatLog([]);
@@ -129,11 +124,9 @@ const ChatScreen = () => {
         conversation: chatLog,
         topic,
       });
-      alert("Conversación guardada exitosamente.");
       window.location.href = "/topic-selection";
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
-      alert("No se pudo guardar la conversación.");
       throw error;
     }
   };
@@ -154,18 +147,13 @@ const ChatScreen = () => {
   // Manejo del reconocimiento de voz
   const toggleListening = () => {
     if (!recognition) {
-      console.log(
-        "El reconocimiento de voz no es compatible con este navegador."
-      );
       return;
     }
     if (!listening) {
-      console.log("Iniciando reconocimiento de voz...");
       recognition.start();
       setListening(true);
       setTranscriptBuffer("");
     } else {
-      console.log("Deteniendo reconocimiento de voz...");
       recognition.stop();
       setListening(false);
       processTranscript();
@@ -175,7 +163,6 @@ const ChatScreen = () => {
   const processTranscript = () => {
     if (transcriptBuffer) {
       const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
-      console.log("Procesando transcripción del buffer:", transcriptBuffer);
       setChatLog((prevLog) => [
         ...prevLog,
         { sender: "user", message: formattedMessage },
@@ -196,8 +183,6 @@ const ChatScreen = () => {
         chatHistory: chatLog,
       };
 
-      console.log("Datos enviados al backend:", payload);
-
       const response = await axios.post(`${API_URL}/chat`, payload);
       const botReply = response.data.botMessage;
 
@@ -205,7 +190,6 @@ const ChatScreen = () => {
         chatLog.length > 0 &&
         chatLog[chatLog.length - 1].message === botReply
       ) {
-        console.warn("Respuesta repetitiva detectada. Ignorando...");
         return;
       }
 
@@ -247,7 +231,6 @@ const ChatScreen = () => {
         if (finalTranscript) {
           setTranscriptBuffer(finalTranscript.trim());
         }
-        console.log("Resultados parciales (interim):", interimTranscript);
       };
 
       recognition.onerror = (event) => {
@@ -255,7 +238,6 @@ const ChatScreen = () => {
       };
 
       recognition.onend = () => {
-        console.log("Reconocimiento de voz detenido.");
         if (listening) {
           recognition.start();
         }
@@ -289,7 +271,7 @@ const ChatScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
-      <h1 className="text-3xl text-textSecondColor">Chat Screen</h1>
+      <h1 className="text-3xl text-textSecondColor pt-8"> Let's Talk</h1>
 
       {showModal && (
         <div className="modal-overlay">
@@ -319,12 +301,14 @@ const ChatScreen = () => {
       <div
         ref={chatContainerRef}
         className="chat-log text-textMainColor text-lg mb-32 max-w-lg w-full overflow-y-auto"
-        style={{ maxHeight: "70vh",    
-          scrollbarWidth: "none",    
-          msOverflowStyle: "none"  }} 
+        style={{
+          maxHeight: "70vh",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
       >
         {chatLog.map((entry, index) => (
-          <p
+          <div
             key={index}
             className={`${
               entry.sender === "user"
@@ -359,15 +343,16 @@ const ChatScreen = () => {
                   >
                     Traducir
                   </button>
-                  {translations[index] && (
-                    <p className="text-xs text-textMainColor italic mt-1">
-                      {translations[index]}
-                    </p>
-                  )}
                 </div>
               )}
             </div>
-          </p>
+
+            {translations[index] && (
+              <p className="text-xs text-textMainColor italic mt-2">
+                {translations[index]}
+              </p>
+            )}
+          </div>
         ))}
       </div>
 

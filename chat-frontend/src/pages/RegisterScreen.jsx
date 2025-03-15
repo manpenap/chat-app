@@ -20,21 +20,44 @@ const RegisterScreen = () => {
     try {
       await axios.post('/api/user/register', { name, email, password, level });
       navigate('/login');
-    } catch (error) {
-      console.error('Error durante el registro:', error);
-      setError('Hubo un problema durante el registro. Inténtalo de nuevo.');
+    } catch (err) {
+      
+     
+      
+      let errorMessage = 'Hubo un problema durante el registro. Inténtalo de nuevo.';
+      
+      // Verificamos si el error viene del backend indicando que el email ya existe
+      if (err.response && err.response.status === 400) {
+        const msg = err.response.data.message || '';
+        if (msg.toLowerCase().includes('email') && msg.toLowerCase().includes('registrado')) {
+          errorMessage = 'El email ya está registrado.';
+        }
+      }
+      setError(errorMessage);
     }
   };
 
-  const handleEvaluateLevel = () => {
-    navigate('/evaluation');
+  const handleRedirectToLogin = () => {
+    navigate('/login');
   };
 
   return (
     <div className="min-h-screen bg-backgroundAlternative flex items-center justify-center">
       <div className="bg-background rounded-lg shadow-lg p-8 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center text-textSecondColor mb-6">Registro</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && (
+          <div className="mb-4">
+            <p className="text-red-500">{error}</p>
+            {error === 'El email ya está registrado.' && (
+              <button
+                onClick={handleRedirectToLogin}
+                className="mt-2 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-200"
+              >
+                Ir a Iniciar Sesión
+              </button>
+            )}
+          </div>
+        )}
         <div className="mb-4">
           <label className="block text-textMainColor text-sm font-semibold mb-2">Nombre</label>
           <input
@@ -84,7 +107,6 @@ const RegisterScreen = () => {
         >
           Registrar
         </button>
-        
       </div>
     </div>
   );

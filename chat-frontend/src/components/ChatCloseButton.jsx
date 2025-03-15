@@ -11,7 +11,7 @@ const ChatCloseButton = ({ onReturnHome }) => {
       await onReturnHome();
     } catch (error) {
       console.error('Error al guardar la conversación:', error);
-      alert('Hubo un problema al guardar la conversación. Inténtalo nuevamente.');
+      
     } finally {
       setIsLoading(false);
     }

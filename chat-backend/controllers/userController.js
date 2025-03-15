@@ -19,6 +19,7 @@ export const registerUser = async (req, res) => {
     Advanced: "c1_path",
   };
 
+
   const id_path = idPaths[level];
   console.log(id_path);
 
@@ -29,7 +30,7 @@ export const registerUser = async (req, res) => {
   try {
     const userExists = await User.findOne({ email });
     if (userExists)
-      return res.status(400).json({ message: "El usuario ya existe" });
+      return res.status(400).json({ message: "El email ya está registrado."  });
 
     const user = await User.create({ name, email, password, level, id_path });
     res.status(201).json({
