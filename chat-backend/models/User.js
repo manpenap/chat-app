@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   level: { type: String }, // Nivel de inglés por defecto
   id_path: { type: String, required: true },
+  resetPasswordToken: { type: String },
+  resetPasswordExpire: { type: Date },
 }, { timestamps: true });
 
 // Middleware para encriptar la contraseña antes de guardar

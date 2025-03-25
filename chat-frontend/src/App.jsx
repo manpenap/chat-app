@@ -7,6 +7,8 @@ import LearningPath from './pages/LearningPath';
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
 import TopicSelection from './pages/TopicSelection';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const AppRoutes = () => {
   let routes = useRoutes([
@@ -18,7 +20,9 @@ const AppRoutes = () => {
     { path: "/register", element: <RegisterScreen /> },
     { path: "/chatscreen", element: <ChatScreen /> },
     { path: "/evaluation", element: <ChatScreen chatType="evaluation" userLevel="A1" /> },
-    { path: "/learning-path/:id_path", element: <LearningPath /> }
+    { path: "/learning-path/:id_path", element: <LearningPath /> },
+    { path: "/forgot-password", element: <ForgotPassword /> },
+    { path: "/reset-password/:token", element: <ResetPassword /> }
   ]);
 
   return routes;
