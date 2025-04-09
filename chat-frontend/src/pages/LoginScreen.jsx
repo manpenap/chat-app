@@ -6,14 +6,16 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("/api/user/login", { email, password });
+      const response = await axios.post(`${API_URL}/api/user/login`, { email, password });
       localStorage.setItem("authToken", response.data.token);
 
       // Obtener información del usuario
-      const userProfile = await axios.get("/api/user/profile", {
+      const userProfile = await axios.get(`${API_URL}/api/user/profile`, {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });
       const idPath = userProfile.data.id_path;
