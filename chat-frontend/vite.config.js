@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000', // Cambia 5000 si tu backend usa otro puerto
+      '/api': 'https://lets-talk-4ejt.onrender.com', // Cambia 5000 si tu backend usa otro puerto
     },
   },
 

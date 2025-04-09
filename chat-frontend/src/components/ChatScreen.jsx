@@ -4,7 +4,7 @@ import axios from "axios";
 
 import ChatCloseButton from "./ChatCloseButton";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://lets-talk-4ejt.onrender.com/api";
 
 // Configuración de Speech Recognition con idioma en inglés
 const SpeechRecognition =
