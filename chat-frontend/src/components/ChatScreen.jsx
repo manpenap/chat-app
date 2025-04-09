@@ -160,6 +160,7 @@ const ChatScreen = () => {
     }
   };
 
+  // Procesar el mensaje transcrito
   const processTranscript = () => {
     if (transcriptBuffer) {
       const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
@@ -271,7 +272,20 @@ const ChatScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
-      <h1 className="text-3xl text-textSecondColor pt-8"> Let's Talk</h1>
+      <h1 className="text-3xl text-textSecondColor pt-12"> Let's Talk</h1>
+      <div className="min-h-6">
+        {listening && transcriptBuffer === "" && (
+          <div className="flex items-center gap-2 text-yellow-300 animate-pulse">
+            <span>🎙️ Escuchando...</span>
+          </div>
+        )}
+
+        {transcriptBuffer !== "" && (
+          <div className="flex items-center gap-2 text-green-400 animate-pulse">
+            <span>✅ Pulsa "Detener" para enviar tu mensaje</span>
+          </div>
+        )}
+      </div>
 
       {showModal && (
         <div className="modal-overlay">
@@ -367,10 +381,25 @@ const ChatScreen = () => {
         <button
           className={`${
             showModal ? "hidden" : "block"
-          }  bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover`}
+          } bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover transition duration-200 flex items-center justify-center gap-2 ${
+            listening && transcriptBuffer === ""
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
           onClick={toggleListening}
+          disabled={listening && transcriptBuffer === ""}
         >
-          {listening ? "Detener" : "Hablar"}
+          {listening ? (
+            <>
+              
+              Detener
+            </>
+          ) : (
+            <>
+            
+              Hablar
+            </>
+          )}
         </button>
       </div>
     </div>
