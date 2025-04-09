@@ -5,7 +5,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen w-screen flex flex-col bg-background">
       <header className="flex justify-between items-center p-6 shadow-md bg-backgroundAlternative">
-        <h1 className="text-2xl font-bold text-textMainColor">Chat English</h1>
+        <h1 className="text-2xl font-bold text-textMainColor">Let`s Talk</h1>
         <div>
           <Link 
             to="/login" 
