@@ -11,11 +11,11 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(`${API_URL}/api/user/login`, { email, password });
+      const response = await axios.post(`${API_URL}/user/login`, { email, password });
       localStorage.setItem("authToken", response.data.token);
 
       // Obtener información del usuario
-      const userProfile = await axios.get(`${API_URL}/api/user/profile`, {
+      const userProfile = await axios.get(`${API_URL}//user/profile`, {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });
       const idPath = userProfile.data.id_path;
