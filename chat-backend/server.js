@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-
+const allowedOrigins = ['http://localhost:3000', 'https://chat-app-gamma-mauve.vercel.app']; 
 // Importar todas las rutas desde el archivo index.js
 import routes from './routes/index.js';
 
