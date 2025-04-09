@@ -16,7 +16,6 @@ const LoginScreen = () => {
       const userProfile = await axios.get("/api/user/profile", {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });
-      console.log("Perfil del usuario:", userProfile.data);
       const idPath = userProfile.data.id_path;
 
       if (!idPath) {

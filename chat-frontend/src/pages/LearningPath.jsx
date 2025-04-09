@@ -4,7 +4,6 @@ import axios from 'axios'; // Instalar si no lo tienes: npm install axios
 
 const LearningPath = () => {
   const { id_path } = useParams();
-  console.log("id_path recibido desde URL:", id_path);
   const [learningPath, setLearningPath] = useState({ unit: '', lessons: [] }); // Almacena los datos
   const [loading, setLoading] = useState(true); // Indicador de carga
   const [error, setError] = useState(null); // Almacena errores
@@ -20,19 +19,17 @@ const LearningPath = () => {
   const handleLessonClick = (lesson) => {
     if (lesson.type !== 'listening' && lesson.type !== 'reading') {
       navigate('/chatscreen', { state: { lesson } }); // Navega a ChatScreen pasando datos de la lección
-    } else {
-      console.log(`La lección "${lesson.name}" no es interactiva.`);
-    }
+    } 
   };
 
-  console.log('id_path recibido desde URL:', id_path);
+
 
 
   useEffect(() => {
     const fetchLearningPath = async () => {
       try {
         const response = await axios.get(`/api/learning-path/level/${id_path}`);
-        console.log('Datos recibidos:', response.data);
+        
         setLearningPath(response.data);
         
         setLoading(false);
@@ -50,7 +47,7 @@ const LearningPath = () => {
   if (loading) return <p>Cargando datos...</p>;
   if (error) return <p>{error}</p>;
 
-  console.log('learningPath: ',learningPath)
+ 
   return (
     <div className="min-h-screen bg-slate-800 p-6">
       <header className="flex justify-between items-center mb-6">

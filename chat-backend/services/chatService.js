@@ -38,7 +38,7 @@ export const handleChatMessage = async (message, topic, userLevel, chatHistory) 
   Always progress the conversation appropriately and ensure clarity in communication.
   `;
 
-  console.log('System Prompt:', systemMessage);
+ 
 
   const messages = [
     { role: 'system', content: systemMessage.trim() },

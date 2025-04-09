@@ -54,7 +54,7 @@ export const registerUser = async (req, res) => {
   };
 
   const id_path = idPaths[level];
-  console.log(id_path);
+  
 
   if (!id_path) {
     return res.status(400).json({ message: "Nivel inválido." });
