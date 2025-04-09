@@ -37,7 +37,7 @@ const LandingPage = () => {
 
       {/* Pie de página */}
       <footer className="bg-backgroundAlternative p-4 text-center text-gray-500">
-        © {new Date().getFullYear()} Chat English. Todos los derechos reservados.
+        © {new Date().getFullYear()} Let`s Talk. Todos los derechos reservados.
       </footer>
     </div>
   );
