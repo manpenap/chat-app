@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation , useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import ChatCloseButton from "./ChatCloseButton";
 
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
+const navigate = useNavigate
+
 
 // Configuración de Speech Recognition con idioma en inglés
 const SpeechRecognition =
@@ -124,7 +126,7 @@ const ChatScreen = () => {
         conversation: chatLog,
         topic,
       });
-      window.location.href = "/topic-selection";
+      navigate("/topic-selection") ;
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
       throw error;
