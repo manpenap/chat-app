@@ -5,7 +5,7 @@ import axios from "axios";
 import ChatCloseButton from "./ChatCloseButton";
 
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
-const navigate = useNavigate
+
 
 
 // Configuración de Speech Recognition con idioma en inglés
@@ -21,6 +21,7 @@ if (recognition) {
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
+  const navigate = useNavigate()
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
