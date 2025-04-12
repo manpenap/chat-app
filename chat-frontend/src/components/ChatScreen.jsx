@@ -129,7 +129,7 @@ const ChatScreen = () => {
       navigate("/topic-selection") ;
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
-      throw error;
+      
     }
   };
 
