@@ -2,7 +2,7 @@
 import Conversation from '../models/Conversation.js';
 
 // Crear o actualizar conversación (upsert)
-export const saveConversationWithUserAndTopic = async (userId, conversation, topic) => {
+export const saveConversationWithTopic = async (userId, conversation, topic) => {
   const chat = new Conversation({
     userId,
     topic,
@@ -13,8 +13,8 @@ export const saveConversationWithUserAndTopic = async (userId, conversation, top
 };
 
 // Obtener la conversación por usuario y tópico
-export const getLastConversationByUserAndTopic = async (userId, topic) => {
-  return await Chat.findOne({ userId, topic }).sort({ createdAt: -1 });
+export const getLastConversationByTopic = async (userId, topic) => {
+  return await Conversation.findOne({ userId, topic }).sort({ createdAt: -1 });
 };
 
 // Eliminar conversación por usuario y tópico
