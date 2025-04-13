@@ -11,7 +11,7 @@ const TopicSelection = () => {
     const fetchUserProfile = async () => {
       try {
         // Se asume que el token de autenticación ya está almacenado en localStorage
-        const response = await axios.get(`${API_URL}/api/user/profile`, {
+        const response = await axios.get(`${API_URL}/user/profile`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
         });
         setUser(response.data);
