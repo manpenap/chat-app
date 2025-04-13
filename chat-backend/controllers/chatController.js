@@ -26,10 +26,12 @@ export const getWelcomeMessage = async (req, res) => {
 export const getLastConversation = async (req, res) => {
   try {
     const { topic } = req.query;
+    const userId = req.user._id; 
+
     if (!topic) {
       return res.status(400).json({ error: 'El parámetro "topic" es requerido.' });
     }
-    const conversation = await chatService.fetchLastConversation(topic);
+    const conversation = await chatService.fetchLastConversation(userId, topic);
     // En lugar de devolver 404, devolvemos un array vacío si no se encontró conversación.
     res.json({ conversation: conversation || [] });
   } catch (error) {
@@ -41,10 +43,12 @@ export const getLastConversation = async (req, res) => {
 export const saveConversation = async (req, res) => {
   try {
     const { conversation, topic } = req.body;
+    const userId = req.user._id;
+
     if (!conversation || !topic) {
       return res.status(400).json({ error: 'Se requieren "conversation" y "topic".' });
     }
-    const saved = await chatService.handleSaveConversation(conversation, topic);
+    const saved = await chatService.handleSaveConversation(userId, conversation, topic);
     res.json({ saved });
   } catch (error) {
     console.error('Error al guardar la conversación:', error);
@@ -55,7 +59,8 @@ export const saveConversation = async (req, res) => {
 export const handleChat = async (req, res) => {
   try {
     const { message, topic, userLevel, chatHistory } = req.body;
-    const botResponse = await chatService.handleChatMessage(message, topic, userLevel, chatHistory);
+    const userId = req.user._id;
+    const botResponse = await chatService.handleChatMessage(userId, message, topic, userLevel, chatHistory);
     res.json({ botMessage: botResponse });
   } catch (error) {
     console.error('Error manejando el chat:', error);

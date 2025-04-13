@@ -2,7 +2,7 @@
 import { callOpenAIChat, synthesizeSpeech } from './externalApiService.js';
 import { getLastConversationByTopic, saveConversationWithTopic } from '../repositories/chatRepository.js';
 
-export const handleChatMessage = async (message, topic, userLevel, chatHistory) => {
+export const handleChatMessage = async (userId, message, topic, userLevel, chatHistory) => {
   let systemMessage;
 
   if (topic && topic !== 'free topic') {
@@ -53,15 +53,15 @@ export const handleTextToSpeech = async (text) => {
 };
 
 // Recupera la última conversación para un tópico específico
-export const fetchLastConversation = async (topic) => {
-  const lastConversation = await getLastConversationByTopic(topic);
+export const fetchLastConversation = async (userId, topic) => {
+  const lastConversation = await getLastConversationByTopic(userId, topic);
   return lastConversation ? lastConversation.content : null;
 };
 
 // Guarda la conversación actual asociándola al tópico seleccionado
-export const handleSaveConversation = async (conversation, topic) => {
+export const handleSaveConversation = async (userId,conversation, topic) => {
   if (!conversation || !Array.isArray(conversation)) {
     throw new Error('Conversación inválida.');
   }
-  return await saveConversationWithTopic(conversation, topic);
+  return await saveConversationWithTopic(userId, conversation, topic);
 };
