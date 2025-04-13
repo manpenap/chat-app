@@ -5,12 +5,13 @@ import { useNavigate } from 'react-router-dom';
 const TopicSelection = () => {
   const [user, setUser] = useState({ name: '' });
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         // Se asume que el token de autenticación ya está almacenado en localStorage
-        const response = await axios.get('/api/user/profile', {
+        const response = await axios.get(`{API_URL}/api/user/profile`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
         });
         setUser(response.data);
