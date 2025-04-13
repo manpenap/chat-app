@@ -44,10 +44,10 @@ const LoginScreen = () => {
     <div className="min-h-screen bg-backgroundAlternative flex items-center justify-center">
       <div className="bg-background rounded-lg shadow-lg p-8 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center text-textSecondColor mb-6">Bienvenido</h1>
-        <p className="text-xl font-bold text-center text-textSecondColor mb-6 animate-pulse">Conectándose al Servidor...</p>
         {loading ? (
           <div className="flex justify-center items-center">
             <ClipLoader size={50} color={"#3498db"} loading={loading} />
+            <p className="text-xl font-bold text-center text-textSecondColor mb-6 animate-pulse">Conectándose al Servidor...</p>
           </div>
         ) : (
           <div>

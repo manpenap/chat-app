@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ClipLoader } from "react-spinners"; // Importa el spinner de react-spinners
 
 const RegisterScreen = () => {
   const [name, setName] = useState('');
@@ -8,17 +9,20 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const [level, setLevel] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const levels = ['Beginner', 'Basic', 'Pre-Intermediate', 'Upper-Intermediate', 'Advanced'];
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleRegister = async () => {
+    setLoading(true); 
     if (!name || !email || !password || !level) {
       setError('Todos los campos son obligatorios.');
       return;
     }
     
     try {
-      await axios.post('/api/user/register', { name, email, password, level });
+      await axios.post(`${API_URL}/user/register`, { name, email, password, level });
       navigate('/login');
     } catch (err) {
       
@@ -34,6 +38,9 @@ const RegisterScreen = () => {
         }
       }
       setError(errorMessage);
+    } finally {
+      setLoading(false); 
+
     }
   };
 
@@ -45,6 +52,7 @@ const RegisterScreen = () => {
     <div className="min-h-screen bg-backgroundAlternative flex items-center justify-center">
       <div className="bg-background rounded-lg shadow-lg p-8 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center text-textSecondColor mb-6">Registro</h1>
+
         {error && (
           <div className="mb-4">
             <p className="text-red-500">{error}</p>
@@ -58,55 +66,66 @@ const RegisterScreen = () => {
             )}
           </div>
         )}
-        <div className="mb-4">
-          <label className="block text-textMainColor text-sm font-semibold mb-2">Nombre</label>
-          <input
-            type="text"
-            placeholder="Ingresa tu nombre"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-textMainColor text-sm font-semibold mb-2">Correo</label>
-          <input
-            type="email"
-            placeholder="Ingresa tu correo"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-textMainColor text-sm font-semibold mb-2">Contraseña</label>
-          <input
-            type="password"
-            placeholder="Ingresa tu contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div className="mb-6">
-          <label className="block text-textMainColor text-sm font-semibold mb-2">Nivel de Inglés</label>
-          <select
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <ClipLoader size={50} color={"#3498db"} loading={loading} />
+            <p className="text-xl font-bold text-center text-textSecondColor mb-6 animate-pulse">Conectándose al Servidor...</p>
+          </div>
+        ) : (
+        <div>
+          <div className="mb-4">
+            <label className="block text-textMainColor text-sm font-semibold mb-2">Nombre</label>
+            <input
+              type="text"
+              placeholder="Ingresa tu nombre"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-textMainColor text-sm font-semibold mb-2">Correo</label>
+            <input
+              type="email"
+              placeholder="Ingresa tu correo"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-textMainColor text-sm font-semibold mb-2">Contraseña</label>
+            <input
+              type="password"
+              placeholder="Ingresa tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-textMainColor text-sm font-semibold mb-2">Nivel de Inglés</label>
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Selecciona tu nivel</option>
+              {levels.map((lvl) => (
+                <option key={lvl} value={lvl}>{lvl}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={handleRegister}
+            className="w-full bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200 mb-4"
           >
-            <option value="">Selecciona tu nivel</option>
-            {levels.map((lvl) => (
-              <option key={lvl} value={lvl}>{lvl}</option>
-            ))}
-          </select>
-        </div>
-        <button
-          onClick={handleRegister}
-          className="w-full bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200 mb-4"
-        >
-          Registrar
-        </button>
+            Registrar
+          </button>
+        </div> 
+        )}
+         
       </div>
     </div>
   );
