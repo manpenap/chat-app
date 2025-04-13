@@ -23,10 +23,12 @@ export const getWelcomeMessage = async (req, res) => {
   }
 };
 
+/*
+
 export const getLastConversation = async (req, res) => {
   try {
     const { topic } = req.query;
-    const userId = req.user._id; 
+    const { userId } = req;
 
     if (!topic) {
       return res.status(400).json({ error: 'El parámetro "topic" es requerido.' });
@@ -37,6 +39,31 @@ export const getLastConversation = async (req, res) => {
   } catch (error) {
     console.error('Error obteniendo la última conversación:', error);
     res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+};
+
+
+*/
+export const getLastConversation = async (req, res) => {
+  try {
+    const { userId } = req;
+    const { topic } = req.query;
+
+    if (!userId || !topic) {
+      return res.status(400).json({ error: 'userId y topic son requeridos' });
+    }
+
+    const conversation = await Conversation.findOne({ userId, topic })
+      .populate('messages');
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'No se encontró la conversación' });
+    }
+
+    res.status(200).json(conversation);
+  } catch (error) {
+    console.error('Error en getLastConversation:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 
