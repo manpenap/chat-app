@@ -23,15 +23,15 @@ export const getWelcomeMessage = async (req, res) => {
   }
 };
 
-/*
+
 
 export const getLastConversation = async (req, res) => {
   try {
     const { topic } = req.query;
-    const { userId } = req;
+    const  userId = req.user._id;
 
-    if (!topic) {
-      return res.status(400).json({ error: 'El parámetro "topic" es requerido.' });
+    if (!topic || !userId) {
+      return res.status(400).json({ error: 'El parámetro "topic" y "userId" es requerido.' });
     }
     const conversation = await chatService.fetchLastConversation(userId, topic);
     // En lugar de devolver 404, devolvemos un array vacío si no se encontró conversación.
@@ -43,29 +43,8 @@ export const getLastConversation = async (req, res) => {
 };
 
 
-*/
-export const getLastConversation = async (req, res) => {
-  try {
-    const { userId } = req;
-    const { topic } = req.query;
 
-    if (!userId || !topic) {
-      return res.status(400).json({ error: 'userId y topic son requeridos' });
-    }
 
-    const conversation = await Conversation.findOne({ userId, topic })
-      .populate('messages');
-
-    if (!conversation) {
-      return res.status(404).json({ error: 'No se encontró la conversación' });
-    }
-
-    res.status(200).json(conversation);
-  } catch (error) {
-    console.error('Error en getLastConversation:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-};
 
 export const saveConversation = async (req, res) => {
   try {

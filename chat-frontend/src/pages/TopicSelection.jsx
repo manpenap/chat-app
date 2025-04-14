@@ -35,7 +35,7 @@ const TopicSelection = () => {
   const handleTopicSelect = (topic) => {
     // Se navega a la pantalla de chat pasando el tema seleccionado.
     // Ajusta la ruta y los parámetros según la estructura de tu aplicación.
-    navigate('/chatscreen', { state: { topic } });
+    navigate('/chatscreen', { state: { topic  } });
   };
 
   return (

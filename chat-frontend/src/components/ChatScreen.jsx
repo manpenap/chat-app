@@ -70,7 +70,10 @@ const ChatScreen = () => {
     const fetchPreviousConversation = async () => {
       try {
         const response = await axios.get(`${API_URL}/chat/last-conversation`, {
-          params: { topic },
+          params: { topic},
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         });
         if (
           response.data &&
