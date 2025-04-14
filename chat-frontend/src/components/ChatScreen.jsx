@@ -129,13 +129,18 @@ const ChatScreen = () => {
       await axios.post(`${API_URL}/chat/save-conversation`, {
         conversation: chatLog,
         topic,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
       });
-      navigate("/topic-selection") ;
+  
+      navigate("/topic-selection");
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
-      
     }
   };
+  
 
   // Reproducir texto en audio
   const playText = (text) => {
@@ -195,7 +200,7 @@ const ChatScreen = () => {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
-      
+
       const botReply = response.data.botMessage;
 
       if (
