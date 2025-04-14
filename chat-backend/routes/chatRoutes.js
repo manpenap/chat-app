@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/welcome', chatController.getWelcomeMessage);
 router.get('/last-conversation', protect,  chatController.getLastConversation);
 router.post('/save-conversation', protect, chatController.saveConversation);
-router.post('/', chatController.handleChat);
+router.post('/', protect, chatController.handleChat);
 
 export default router;
 
