@@ -190,7 +190,12 @@ const ChatScreen = () => {
         chatHistory: chatLog,
       };
 
-      const response = await axios.post(`${API_URL}/chat`, payload);
+      const response = await axios.post(`${API_URL}/chat`, payload, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+      });
+      
       const botReply = response.data.botMessage;
 
       if (
