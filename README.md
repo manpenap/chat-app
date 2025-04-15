@@ -1,1 +1,60 @@
-# chat-app
+# 🗣️ Let's Talk - App de práctica de inglés conversacional con IA
+
+¡Bienvenido a Let’s Talk! Esta es una aplicación web full-stack diseñada para ayudarte a mejorar tu inglés conversacional mediante interacciones con una inteligencia artificial.
+
+## 🌟 Descripción del proyecto
+
+Let’s Talk simula conversaciones reales en inglés con un asistente virtual impulsado por la API de OpenAI. Los usuarios pueden registrarse, seleccionar un tema, interactuar con la IA y mejorar su fluidez de manera práctica y dinámica.
+
+> ⚠️ Esta es una versión educativa y de demostración. Actualmente estoy trabajando en una versión comercial con funcionalidades premium.
+
+## 🚀 Funcionalidades
+
+- Registro e inicio de sesión de usuarios con autenticación JWT
+- Lista de temas conversacionales predefinidos
+- Chat interactivo impulsado por OpenAI (GPT)
+- Historial de conversaciones por usuario
+- Diseño responsivo y accesible
+- Conexión con base de datos MongoDB
+
+## 🛠️ Tecnologías utilizadas
+
+### Frontend
+- React
+- Vite
+- Tailwind CSS
+
+### Backend
+- Node.js
+- Express
+- MongoDB
+- JWT (Json Web Token)
+
+### IA
+- OpenAI API (GPT 3.5/4)
+
+## 📷 Capturas de pantalla
+
+*Añade aquí imágenes del chat, interfaz móvil, login, etc.*
+
+## 📦 Instalación local
+
+```bash
+# Clona el repositorio
+git clone https://github.com/tu-usuario/lets-talk.git
+cd lets-talk
+
+# Instala dependencias para frontend y backend
+cd client
+npm install
+cd ../server
+npm install
+
+# Configura las variables de entorno (.env)
+# Ejemplo:
+# OPENAI_API_KEY=tu_clave
+# MONGODB_URI=tu_uri
+# JWT_SECRET=secreto
+
+# Ejecuta ambos entornos
+# Usa herramientas como concurrently o ejecuta cada uno en terminales separadas
