@@ -42,8 +42,8 @@ Let’s Talk simula conversaciones reales en inglés con un asistente virtual im
 
 ```bash
 # Clona el repositorio
-git clone https://github.com/tu-usuario/lets-talk.git
-cd lets-talk
+git clone https://github.com/manpenap/chat-app.git
+cd chat-app
 
 # Instala dependencias para frontend y backend
 cd client
