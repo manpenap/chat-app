@@ -35,7 +35,8 @@ Let’s Talk simula conversaciones reales en inglés con un asistente virtual im
 
 ## 📷 Capturas de pantalla
 
-*Añade aquí imágenes del chat, interfaz móvil, login, etc.*
+![Imagen del Chat](screenshots/chat-app.png)
+
 
 ## 📦 Instalación local
 
