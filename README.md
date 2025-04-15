@@ -59,3 +59,15 @@ npm install
 
 # Ejecuta ambos entornos
 # Usa herramientas como concurrently o ejecuta cada uno en terminales separadas
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia Apache 2.0. Puedes utilizar el código con fines educativos y de aprendizaje. No está permitida su redistribución comercial sin autorización.
+
+## 🙋 Sobre el autor
+
+Manuel Peña – Portafolio
+Desarrollador Web Junior con enfoque en Inteligencia Artificial
+Participante del programa Oracle Next Education (Fase 3: Backend + IA)
+📧 manpenap@gmail.com | LinkedIn
+
