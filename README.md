@@ -66,7 +66,7 @@ Este proyecto está bajo la licencia Apache 2.0. Puedes utilizar el código con 
 
 ## 🙋 Sobre el autor
 
-Manuel Peña – Portafolio
-Desarrollador Web Junior con enfoque en Inteligencia Artificial
-Participante del programa Oracle Next Education (Fase 3: Backend + IA)
-📧 manpenap@gmail.com | [LinkedIn] (https://www.linkedin.com/in/manuel-alejandro-pena/)
+- Manuel Peña – Portafolio
+- Desarrollador Web Junior con enfoque en Inteligencia Artificial
+- Participante del programa Oracle Next Education (Fase 3: Backend + IA)
+- Contacto manpenap@gmail.com | [LinkedIn](https://www.linkedin.com/in/manuel-alejandro-pena/)
