@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation , useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import ChatCloseButton from "./ChatCloseButton";
+import { fetchPreviousConversation, saveConversation, sendMessageToBot } from "../services/api";
 
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
-
-
 
 // Configuración de Speech Recognition con idioma en inglés
 const SpeechRecognition =
@@ -21,7 +20,7 @@ if (recognition) {
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
@@ -67,31 +66,20 @@ const ChatScreen = () => {
 
   // Obtener conversación previa
   useEffect(() => {
-    const fetchPreviousConversation = async () => {
+    const loadPreviousConversation = async () => {
       try {
-        const response = await axios.get(`${API_URL}/chat/last-conversation`, {
-          params: { topic},
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        if (
-          response.data &&
-          response.data.conversation &&
-          response.data.conversation.length > 0
-        ) {
+        const token = localStorage.getItem("authToken");
+        const response = await fetchPreviousConversation(topic, token);
+        if (response.data && response.data.conversation?.length > 0) {
           setPreviousConversation(response.data.conversation);
           setShowModal(true);
-        } else {
-          // Si no hay conversación previa, marcamos la decisión como tomada para seguir el flujo
-          setDecisionMade(true);
         }
       } catch (error) {
         console.error("Error al cargar la conversación previa:", error);
       }
     };
 
-    fetchPreviousConversation();
+    loadPreviousConversation();
   }, [topic]);
 
   // Funciones para manejar la decisión del modal
@@ -126,21 +114,13 @@ const ChatScreen = () => {
   // Guardar conversación en la base de datos
   const handleSaveConversation = async () => {
     try {
-      await axios.post(`${API_URL}/chat/save-conversation`, {
-        conversation: chatLog,
-        topic,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
-  
+      const token = localStorage.getItem("authToken");
+      await saveConversation(chatLog, topic, token);
       navigate("/topic-selection");
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
     }
   };
-  
 
   // Reproducir texto en audio
   const playText = (text) => {
@@ -179,52 +159,24 @@ const ChatScreen = () => {
         ...prevLog,
         { sender: "user", message: formattedMessage },
       ]);
-      sendMessageToBot(transcriptBuffer.trim());
+      sendMessageToBotHandler(transcriptBuffer.trim());
       setTranscriptBuffer("");
     }
   };
 
   // Enviar mensaje al bot
-  const sendMessageToBot = async (message) => {
+  const sendMessageToBotHandler = async (message) => {
     try {
+      const token = localStorage.getItem("authToken");
       const payload = {
         message,
         topic,
         userLevel: "A1",
-        isInitialMessage: chatLog.length === 0,
         chatHistory: chatLog,
       };
-
-      const response = await axios.post(`${API_URL}/chat`, payload, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
-
+      const response = await sendMessageToBot(payload, token);
       const botReply = response.data.botMessage;
-
-      if (
-        chatLog.length > 0 &&
-        chatLog[chatLog.length - 1].message === botReply
-      ) {
-        return;
-      }
-
-      // Si es el primer mensaje y se inicia una nueva conversación, el bot saluda
-      if (chatLog.length === 0) {
-        const welcome = `Welcome! Are you ready to talk about "${topic}"?`;
-        setChatLog((prevLog) => [
-          ...prevLog,
-          { sender: "bot", message: welcome },
-        ]);
-        playText(welcome);
-      }
-
-      setChatLog((prevLog) => [
-        ...prevLog,
-        { sender: "bot", message: botReply },
-      ]);
-      playText(botReply);
+      setChatLog((prevLog) => [...prevLog, { sender: "bot", message: botReply }]);
     } catch (error) {
       console.error("Error enviando mensaje al bot:", error);
     }

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "centering-star-441302-a3",
+  "private_key_id": "5624efc7d7f28c657a806ab6448f4cec52357e14",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEugIBADANBgkqhkiG9w0BAQEFAASCBKQwggSgAgEAAoIBAQC97N5sYNMOv0Se\npmQy6zitPs9gEPXQUrFDlatln31UCy5uU4QRE//mOiE7adO7zwerHSZRSsClVX8W\nQvf1ku2B/Kfs/O0BR/DsLKR+Uf0rzWEmtNbKtJgKELakYwF1wCzMr9DXn+R3Ptmn\nVFhZcsCqibUKrVPXJHFBgjRn2bC9BRxfBMaEz6UF4Op5zYVVeVhjnzic75jDMUrT\nO4vIlvmj8wJ9ubqAFQJ/o4XebQDiiJX4kRtC+9+2VlRkkM+qKHJTGIeFMgUxe0kA\nds4gOKS4LKDqJk0Gjm6ugOMpTCMY8otU2B2VZXBnPXWg9OrXKGeOISWvMtkC1z3T\nLEQBHyj9AgMBAAECgf85nqMxk4PJ9ZKGj0nW04YJCVqLdURzmfgtiOV270Fr6KMt\ngCjmWtWdWLARq7Q7m5O4AMqfNGPob7J0DofWTmfAB+bqVHw9keswZlrWorPW63g4\nm085hZCa0ndBaB1em+77f7DcZKXrh3srnhXaYqC7xwt7McU91XsxZKSBh98WzkSL\nK/eok63NYm5ZN2H61Ywt2wbMOjbAqGoyhHuNcr+/kFwNW7PpQ+DeHpp3ZgaFXwNy\n6gQ+WfoVEADNGgLoisFmVZ6DeHOrv1rmdA43N1151+vfLYoQZmOHxIpd7OnIJEcI\nhDZ92Bt1jAKV32Cm+6d6ZKhQnjPspLUN7SIw8eECgYEA+xhHGSe4B6h/a5z009z5\nlf5UqLaRs7SIpHSQR9jeDsZaak7ObQPgbAGV1QxmhrhrV0+yaV4Yg+44oAP6Uqrt\nJtXxC7vB6JG1P3Ii/rxc9TlKSrQxa/2v7e5tKnGDVo5hkRoy7rzgkUYgQaaCi3J8\n+FLnwDuuHmKAa4YunpZnZtUCgYEAwaKuzuJwmNGipjKcDR2wj8+i4T+fx3VDBDzU\n+P47xNyQjEOgTJjgrjnwq5fJhoQAA+whR+XfVfUIjCyaZv1oWfbQn3JYDd/wzTB4\nNqlHpGyeAXMoQx8LJ/v9g4kzjK6kjxPFVUYzylpJzVyecXCqbJzadcubMbJs6UVo\ns1AXHYkCgYAtLOYFyZabkh4yr0+BGp2w9cwneolmSpHW/L3En2j8QYWc4MbU6ECl\nTfe2GAAONvnhAI651FsWyXJYn76WxvfZ593xXXt6q1RvsMpJCHy1BfSu0hKeOks/\nxIjRfRDDLuSw5YTKXSMOIA7HoPyVuChxyQC3HkWqY9B1B/Q1RhwebQKBgGhFTXL0\ntwNj5/0tRaE+eqSGgERheY3z1DnE9D580PyqdWBCzmBQ9rR7WOFeJFQ+Yq+6CRXp\ncEGeaJLrNd392aKQaTljXo1iKQ6laiatM3oUT2WieGzkm6JVbOfXCx5XsR+m2t2X\npy3xPsrKdDvMGsnQEUfbc1/ooANhsAbXOwtZAoGAVzG1gNEPQYdrs6/4wOaKvxgu\n8zWipF1HzQcH898YetVW6p6upqvKUnYE1uQx2hI5GCb5ccqa4aDOm3iN5n9j1hZO\nfxjKOXH4/b6v5R5MXrhaQlft3OJJCO79Wk/ShygS4J9v3TLSGqOUeMiRn6hL4KPJ\ncDfHtPfYlxBDXFaNc8U=\n-----END PRIVATE KEY-----\n",
+  "client_email": "chat-app@centering-star-441302-a3.iam.gserviceaccount.com",
+  "client_id": "112133855528024491088",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/chat-app%40centering-star-441302-a3.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

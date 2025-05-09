@@ -3,7 +3,6 @@ import { useRoutes, BrowserRouter } from 'react-router-dom';
 import HomeScreen from './pages/HomeScreen';
 import ChatScreen from './components/ChatScreen';
 import UserProfile from './components/UserProfile';
-import LearningPath from './pages/LearningPath';
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
 import TopicSelection from './pages/TopicSelection';
@@ -20,7 +19,6 @@ const AppRoutes = () => {
     { path: "/register", element: <RegisterScreen /> },
     { path: "/chatscreen", element: <ChatScreen /> },
     { path: "/evaluation", element: <ChatScreen chatType="evaluation" userLevel="A1" /> },
-    { path: "/learning-path/:id_path", element: <LearningPath /> },
     { path: "/forgot-password", element: <ForgotPassword /> },
     { path: "/reset-password/:token", element: <ResetPassword /> }
   ]);
