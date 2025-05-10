@@ -65,6 +65,27 @@ export const fetchUserProfile = async (token) => {
   return response.data; // Devuelve directamente los datos del perfil
 };
 
+// Función para obtener el mensaje de bienvenida
+export const fetchWelcomeMessage = async (topic, level, token) => {
+  return apiClient.get("/chat/welcome", {
+    params: { topic, level },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+// Función para traducir mensajes
+export const translateMessage = async (message) => {
+  const response = await axios.get("https://api.mymemory.translated.net/get", {
+    params: {
+      q: message,
+      langpair: "en|es",
+    },
+  });
+  return response.data.responseData.translatedText;
+};
+
+
+
 // Función para obtener la conversación previa
 export const fetchPreviousConversation = async (topic, token) => {
   return apiClient.get("/chat/last-conversation", {

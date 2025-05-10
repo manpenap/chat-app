@@ -4,7 +4,13 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 import ChatCloseButton from "./ChatCloseButton";
-import { fetchPreviousConversation, saveConversation, sendMessageToBot } from "../services/api";
+import {
+  fetchPreviousConversation,
+  saveConversation,
+  sendMessageToBot,
+  fetchWelcomeMessage,
+  translateMessage,
+} from "../services/api";
 import ChatLog from "./ChatLog";
 import Modal from "./Modal";
 
@@ -42,19 +48,9 @@ const ChatScreen = () => {
   const chatContainerRef = useRef(null);
 
   const handleTranslate = async (index, message) => {
-    // Si ya se tradujo este mensaje, no hacemos nada (o podríamos implementar toggle)
     if (translations[index]) return;
     try {
-      const response = await axios.get(
-        "https://api.mymemory.translated.net/get",
-        {
-          params: {
-            q: message,
-            langpair: "en|es",
-          },
-        }
-      );
-      const translatedText = response.data.responseData.translatedText;
+      const translatedText = await translateMessage(message);
       setTranslations((prev) => ({ ...prev, [index]: translatedText }));
     } catch (error) {
       console.error("Error al traducir:", error);
@@ -177,7 +173,12 @@ const ChatScreen = () => {
       };
       const response = await sendMessageToBot(payload, authToken);
       const botReply = response.data.botMessage;
+
+      // Agregar el mensaje del bot al chatLog
       setChatLog((prevLog) => [...prevLog, { sender: "bot", message: botReply }]);
+
+      // Reproducir el mensaje del bot
+      playText(botReply);
     } catch (error) {
       console.error("Error enviando mensaje al bot:", error);
     }
@@ -217,11 +218,9 @@ const ChatScreen = () => {
 
   // Obtener saludo de bienvenida solo después de que se haya tomado la decisión
   useEffect(() => {
-    const fetchWelcomeMessage = async () => {
+    const fetchWelcomeMessageHandler = async () => {
       try {
-        const response = await axios.get(`${API_URL}/chat/welcome`, {
-          params: { topic, level: "A1" },
-        });
+        const response = await fetchWelcomeMessage(topic, "A1", authToken);
         const message = response.data.botMessage;
 
         if (chatLog.length === 0 && !welcomeMessageAdded.current) {
@@ -235,9 +234,9 @@ const ChatScreen = () => {
     };
 
     if (decisionMade && chatLog.length === 0) {
-      fetchWelcomeMessage();
+      fetchWelcomeMessageHandler();
     }
-  }, [topic, chatLog, decisionMade]);
+  }, [topic, chatLog, decisionMade, authToken]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
