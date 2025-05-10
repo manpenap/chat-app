@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useError } from "../context/ErrorContext";
+import useSpeechRecognition from "../hooks/useSpeechRecognition";
 
 import ChatCloseButton from "./ChatCloseButton";
 import {
@@ -18,22 +19,18 @@ import { capitalizeSentences, playText } from "../utils/utils";
 
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
 
-// Configuración de Speech Recognition con idioma en inglés
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-
-if (recognition) {
-  recognition.lang = "en-US";
-  recognition.continuous = true;
-  recognition.interimResults = true;
-}
-
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
   const { authToken } = useAuth();
   const navigate = useNavigate();
   const { error, showError, clearError } = useError();
+
+  const {
+    listening,
+    transcriptBuffer,
+    startListening,
+    stopListening,
+  } = useSpeechRecognition();
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
@@ -41,8 +38,6 @@ const ChatScreen = () => {
 
   const [conversationState, setConversationState] = useState({
     chatLog: [],
-    listening: false,
-    transcriptBuffer: "",
     previousConversation: null,
     translations: {},
     showModal: false,
@@ -142,43 +137,18 @@ const ChatScreen = () => {
     }
   };
 
-  // Manejo del reconocimiento de voz
-  const toggleListening = () => {
-    if (!recognition) {
-      return;
-    }
-    if (!conversationState.listening) {
-      recognition.start();
-      setConversationState((prevState) => ({
-        ...prevState,
-        listening: true,
-        transcriptBuffer: "",
-      }));
-    } else {
-      recognition.stop();
-      setConversationState((prevState) => ({
-        ...prevState,
-        listening: false,
-      }));
-      processTranscript();
-    }
-  };
-
   // Procesar el mensaje transcrito
   const processTranscript = () => {
-    if (conversationState.transcriptBuffer) {
-      const formattedMessage = capitalizeSentences(
-        conversationState.transcriptBuffer.trim()
-      );
+    if (transcriptBuffer) {
+      const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
       setConversationState((prevState) => ({
         ...prevState,
         chatLog: [
           ...prevState.chatLog,
           { sender: "user", message: formattedMessage },
         ],
-        transcriptBuffer: "",
       }));
-      sendMessageToBotHandler(conversationState.transcriptBuffer.trim());
+      sendMessageToBotHandler(transcriptBuffer.trim());
     }
   };
 
@@ -209,41 +179,6 @@ const ChatScreen = () => {
     }
   };
 
-  // Configuración del reconocimiento de voz
-  useEffect(() => {
-    if (recognition) {
-      recognition.onresult = (event) => {
-        let interimTranscript = "";
-        let finalTranscript = "";
-
-        for (const result of event.results) {
-          if (result.isFinal) {
-            finalTranscript += result[0].transcript.trim() + " ";
-          } else {
-            interimTranscript += result[0].transcript;
-          }
-        }
-
-        if (finalTranscript) {
-          setConversationState((prev) => ({
-            ...prev,
-            transcriptBuffer: finalTranscript.trim(),
-          }));
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Error en SpeechRecognition:", event.error);
-      };
-
-      recognition.onend = () => {
-        if (conversationState.listening) {
-          recognition.start();
-        }
-      };
-    }
-  }, [conversationState.listening]);
-
   // Obtener saludo de bienvenida solo después de que se haya tomado la decisión
   useEffect(() => {
     const fetchWelcomeMessageHandler = async () => {
@@ -272,17 +207,26 @@ const ChatScreen = () => {
     }
   }, [topic, conversationState.chatLog, conversationState.decisionMade, authToken]);
 
+  const toggleListening = () => {
+    if (listening) {
+      stopListening(); // Detener el reconocimiento de voz
+      processTranscript(); // Procesar el mensaje transcrito
+    } else {
+      startListening(); // Iniciar el reconocimiento de voz
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
       <h1 className="text-3xl text-textSecondColor pt-12"> Let's Talk</h1>
       <div className="min-h-6">
-        {conversationState.listening && conversationState.transcriptBuffer === "" && (
+        {listening && transcriptBuffer === "" && (
           <div className="flex items-center gap-2 text-yellow-300 animate-pulse">
             <span>🎙️ Escuchando...</span>
           </div>
         )}
 
-        {conversationState.transcriptBuffer !== "" && (
+        {transcriptBuffer !== "" && (
           <div className="flex items-center gap-2 text-green-400 animate-pulse">
             <span>✅ Pulsa "Detener" para enviar tu mensaje</span>
           </div>
@@ -345,24 +289,14 @@ const ChatScreen = () => {
           className={`${
             conversationState.showModal ? "hidden" : "block"
           } bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover transition duration-200 flex items-center justify-center gap-2 ${
-            conversationState.listening && conversationState.transcriptBuffer === ""
+            listening && transcriptBuffer === ""
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
           onClick={toggleListening}
-          disabled={conversationState.listening && conversationState.transcriptBuffer === ""}
+          disabled={listening && transcriptBuffer === ""}
         >
-          {conversationState.listening ? (
-            <>
-              
-              Detener
-            </>
-          ) : (
-            <>
-            
-              Hablar
-            </>
-          )}
+          {listening ? "Detener" : "Hablar"}
         </button>
       </div>
 
