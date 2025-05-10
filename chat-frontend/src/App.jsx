@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { useRoutes, BrowserRouter } from 'react-router-dom';
 import HomeScreen from './pages/HomeScreen';
 import ChatScreen from './components/ChatScreen';
@@ -8,6 +9,7 @@ import RegisterScreen from './pages/RegisterScreen';
 import TopicSelection from './pages/TopicSelection';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import { AuthProvider } from "./context/AuthContext";
 
 const AppRoutes = () => {
   let routes = useRoutes([
@@ -28,9 +30,11 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
+    <AuthProvider>
       <BrowserRouter>
         <AppRoutes />
       </BrowserRouter>
+    </AuthProvider>
   );
 }
 

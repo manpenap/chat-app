@@ -4,7 +4,7 @@ import axios from "axios";
 
 import ChatCloseButton from "./ChatCloseButton";
 import { fetchPreviousConversation, saveConversation, sendMessageToBot } from "../services/api";
-
+import ChatLog from "./ChatLog";
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
 
 // Configuración de Speech Recognition con idioma en inglés
@@ -289,53 +289,12 @@ const ChatScreen = () => {
           msOverflowStyle: "none",
         }}
       >
-        {chatLog.map((entry, index) => (
-          <div
-            key={index}
-            className={`${
-              entry.sender === "user"
-                ? "user-message text-end bg-backgroundAlternative my-2 ps-4 pe-4"
-                : "bot-message text-start bg-backgroundLight my-2 ps-4 pe-4 relative"
-            } py-4 rounded-lg flex flex-col`}
-          >
-            <strong className="text-sm italic">
-              {entry.sender === "user" ? "You: " : "System: "}
-            </strong>
-            {entry.message}
-
-            <div className="mt-2 flex justify-between">
-              {entry.sender !== "user" && (
-                <div className="flex items-start">
-                  <button
-                    className="text-xs text-textSecondColor italic hover:text-buttonColor"
-                    onClick={() => playText(entry.message)}
-                    title="Reproducir audio"
-                  >
-                    🔊 Listen again!
-                  </button>
-                </div>
-              )}
-
-              {/* Ejemplo combinado con el botón Traducir (si ya lo implementaste) */}
-              {entry.sender !== "user" && (
-                <div className="flex flex-col items-end">
-                  <button
-                    className="text-xs text-textSecondColor italic hover:text-buttonColor"
-                    onClick={() => handleTranslate(index, entry.message)}
-                  >
-                    Traducir
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {translations[index] && (
-              <p className="text-xs text-textMainColor italic mt-2">
-                {translations[index]}
-              </p>
-            )}
-          </div>
-        ))}
+        <ChatLog
+          chatLog={chatLog}
+          playText={playText}
+          handleTranslate={handleTranslate}
+          translations={translations}
+        />
       </div>
 
       <div className="fixed bottom-0 w-full flex justify-center items-center gap-4 bg-backgroundAlternative py-4 px-5">
