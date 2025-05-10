@@ -13,6 +13,7 @@ import {
 } from "../services/api";
 import ChatLog from "./ChatLog";
 import Modal from "./Modal";
+import { capitalizeSentences, playText } from "../utils/utils";
 
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
 
@@ -62,13 +63,6 @@ const ChatScreen = () => {
     }
   };
 
-  // Función para capitalizar la primera letra de cada oración
-  const capitalizeSentences = (text) => {
-    return text.replace(/(?:^|\.\s+|\?\s+|!\s+)([a-z])/g, (match, p1) =>
-      match.replace(p1, p1.toUpperCase())
-    );
-  };
-
   // Obtener conversación previa
   useEffect(() => {
     const loadPreviousConversation = async () => {
@@ -96,7 +90,6 @@ const ChatScreen = () => {
       showModal: false,
       decisionMade: true,
     }));
-    // Combinar la conversación previa con el saludo de bienvenida
     const welcomeBack = `Welcome back! Ready to continue talking about "${topic}"?`;
     const updatedLog = conversationState.previousConversation
       ? [...conversationState.previousConversation, { sender: "bot", message: welcomeBack }]
@@ -105,7 +98,7 @@ const ChatScreen = () => {
       ...prev,
       chatLog: updatedLog,
     }));
-    playText(welcomeBack);
+    playText(welcomeBack); // Usar la función importada
   };
 
   // Efecto que se dispara cuando chatLog cambia y se ha tomado la decisión
@@ -135,19 +128,6 @@ const ChatScreen = () => {
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
     }
-  };
-
-  // Reproducir texto en audio
-  const playText = (text) => {
-    if (!("speechSynthesis" in window)) {
-      console.error("Este navegador no soporta síntesis de voz.");
-      return;
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
   };
 
   // Manejo del reconocimiento de voz
