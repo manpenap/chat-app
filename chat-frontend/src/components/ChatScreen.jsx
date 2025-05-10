@@ -36,22 +36,27 @@ const ChatScreen = () => {
     return <p>No se proporcionaron datos del tópico.</p>;
   }
 
-  const [chatLog, setChatLog] = useState([]);
-  const [listening, setListening] = useState(false);
-  const [transcriptBuffer, setTranscriptBuffer] = useState("");
-  const [previousConversation, setPreviousConversation] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [decisionMade, setDecisionMade] = useState(false); // Nuevo estado para controlar la decisión
-  const welcomeMessageAdded = useRef(false);
-  const [translations, setTranslations] = useState({});
+  const [conversationState, setConversationState] = useState({
+    chatLog: [],
+    listening: false,
+    transcriptBuffer: "",
+    previousConversation: null,
+    translations: {},
+    showModal: false,
+    decisionMade: false,
+  });
 
+  const welcomeMessageAdded = useRef(false);
   const chatContainerRef = useRef(null);
 
   const handleTranslate = async (index, message) => {
-    if (translations[index]) return;
+    if (conversationState.translations[index]) return;
     try {
       const translatedText = await translateMessage(message);
-      setTranslations((prev) => ({ ...prev, [index]: translatedText }));
+      setConversationState((prevState) => ({
+        ...prevState,
+        translations: { ...prevState.translations, [index]: translatedText },
+      }));
     } catch (error) {
       console.error("Error al traducir:", error);
     }
@@ -70,8 +75,11 @@ const ChatScreen = () => {
       try {
         const response = await fetchPreviousConversation(topic, authToken);
         if (response.data && response.data.conversation?.length > 0) {
-          setPreviousConversation(response.data.conversation);
-          setShowModal(true);
+          setConversationState((prevState) => ({
+            ...prevState,
+            previousConversation: response.data.conversation,
+            showModal: true,
+          }));
         }
       } catch (error) {
         console.error("Error al cargar la conversación previa:", error);
@@ -83,37 +91,46 @@ const ChatScreen = () => {
 
   // Funciones para manejar la decisión del modal
   const handleContinueConversation = () => {
-    setShowModal(false);
-    setDecisionMade(true);
+    setConversationState((prev) => ({
+      ...prev,
+      showModal: false,
+      decisionMade: true,
+    }));
     // Combinar la conversación previa con el saludo de bienvenida
     const welcomeBack = `Welcome back! Ready to continue talking about "${topic}"?`;
-    const updatedLog = previousConversation
-      ? [...previousConversation, { sender: "bot", message: welcomeBack }]
+    const updatedLog = conversationState.previousConversation
+      ? [...conversationState.previousConversation, { sender: "bot", message: welcomeBack }]
       : [{ sender: "bot", message: welcomeBack }];
-    setChatLog(updatedLog);
+    setConversationState((prev) => ({
+      ...prev,
+      chatLog: updatedLog,
+    }));
     playText(welcomeBack);
   };
 
   // Efecto que se dispara cuando chatLog cambia y se ha tomado la decisión
   useEffect(() => {
-    if (decisionMade && chatContainerRef.current) {
+    if (conversationState.decisionMade && chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
         behavior: "smooth",
       });
     }
-  }, [chatLog, decisionMade]);
+  }, [conversationState.chatLog, conversationState.decisionMade]);
 
   const handleNewConversation = () => {
-    setChatLog([]);
-    setShowModal(false);
-    setDecisionMade(true); // Se marca la decisión
+    setConversationState((prev) => ({
+      ...prev,
+      chatLog: [],
+      showModal: false,
+      decisionMade: true,
+    }));
   };
 
   // Guardar conversación en la base de datos
   const handleSaveConversation = async () => {
     try {
-      await saveConversation(chatLog, topic, authToken);
+      await saveConversation(conversationState.chatLog, topic, authToken);
       navigate("/topic-selection");
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
@@ -138,27 +155,38 @@ const ChatScreen = () => {
     if (!recognition) {
       return;
     }
-    if (!listening) {
+    if (!conversationState.listening) {
       recognition.start();
-      setListening(true);
-      setTranscriptBuffer("");
+      setConversationState((prevState) => ({
+        ...prevState,
+        listening: true,
+        transcriptBuffer: "",
+      }));
     } else {
       recognition.stop();
-      setListening(false);
+      setConversationState((prevState) => ({
+        ...prevState,
+        listening: false,
+      }));
       processTranscript();
     }
   };
 
   // Procesar el mensaje transcrito
   const processTranscript = () => {
-    if (transcriptBuffer) {
-      const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
-      setChatLog((prevLog) => [
-        ...prevLog,
-        { sender: "user", message: formattedMessage },
-      ]);
-      sendMessageToBotHandler(transcriptBuffer.trim());
-      setTranscriptBuffer("");
+    if (conversationState.transcriptBuffer) {
+      const formattedMessage = capitalizeSentences(
+        conversationState.transcriptBuffer.trim()
+      );
+      setConversationState((prevState) => ({
+        ...prevState,
+        chatLog: [
+          ...prevState.chatLog,
+          { sender: "user", message: formattedMessage },
+        ],
+        transcriptBuffer: "",
+      }));
+      sendMessageToBotHandler(conversationState.transcriptBuffer.trim());
     }
   };
 
@@ -169,15 +197,19 @@ const ChatScreen = () => {
         message,
         topic,
         userLevel: "A1",
-        chatHistory: chatLog,
+        chatHistory: conversationState.chatLog,
       };
       const response = await sendMessageToBot(payload, authToken);
       const botReply = response.data.botMessage;
 
-      // Agregar el mensaje del bot al chatLog
-      setChatLog((prevLog) => [...prevLog, { sender: "bot", message: botReply }]);
+      setConversationState((prevState) => ({
+        ...prevState,
+        chatLog: [
+          ...prevState.chatLog,
+          { sender: "bot", message: botReply },
+        ],
+      }));
 
-      // Reproducir el mensaje del bot
       playText(botReply);
     } catch (error) {
       console.error("Error enviando mensaje al bot:", error);
@@ -200,7 +232,10 @@ const ChatScreen = () => {
         }
 
         if (finalTranscript) {
-          setTranscriptBuffer(finalTranscript.trim());
+          setConversationState((prev) => ({
+            ...prev,
+            transcriptBuffer: finalTranscript.trim(),
+          }));
         }
       };
 
@@ -209,12 +244,12 @@ const ChatScreen = () => {
       };
 
       recognition.onend = () => {
-        if (listening) {
+        if (conversationState.listening) {
           recognition.start();
         }
       };
     }
-  }, [listening]);
+  }, [conversationState.listening]);
 
   // Obtener saludo de bienvenida solo después de que se haya tomado la decisión
   useEffect(() => {
@@ -223,8 +258,14 @@ const ChatScreen = () => {
         const response = await fetchWelcomeMessage(topic, "A1", authToken);
         const message = response.data.botMessage;
 
-        if (chatLog.length === 0 && !welcomeMessageAdded.current) {
-          setChatLog((prevLog) => [...prevLog, { sender: "bot", message }]);
+        if (conversationState.chatLog.length === 0 && !welcomeMessageAdded.current) {
+          setConversationState((prevState) => ({
+            ...prevState,
+            chatLog: [
+              ...prevState.chatLog,
+              { sender: "bot", message },
+            ],
+          }));
           playText(message);
           welcomeMessageAdded.current = true;
         }
@@ -233,29 +274,29 @@ const ChatScreen = () => {
       }
     };
 
-    if (decisionMade && chatLog.length === 0) {
+    if (conversationState.decisionMade && conversationState.chatLog.length === 0) {
       fetchWelcomeMessageHandler();
     }
-  }, [topic, chatLog, decisionMade, authToken]);
+  }, [topic, conversationState.chatLog, conversationState.decisionMade, authToken]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
       <h1 className="text-3xl text-textSecondColor pt-12"> Let's Talk</h1>
       <div className="min-h-6">
-        {listening && transcriptBuffer === "" && (
+        {conversationState.listening && conversationState.transcriptBuffer === "" && (
           <div className="flex items-center gap-2 text-yellow-300 animate-pulse">
             <span>🎙️ Escuchando...</span>
           </div>
         )}
 
-        {transcriptBuffer !== "" && (
+        {conversationState.transcriptBuffer !== "" && (
           <div className="flex items-center gap-2 text-green-400 animate-pulse">
             <span>✅ Pulsa "Detener" para enviar tu mensaje</span>
           </div>
         )}
       </div>
 
-      {showModal && (
+      {conversationState.showModal && (
         <Modal
           title="Conversación previa encontrada"
           description="¿Deseas continuar la conversación anterior o iniciar una nueva?"
@@ -273,7 +314,12 @@ const ChatScreen = () => {
               onClick: handleNewConversation,
             },
           ]}
-          onClose={() => setShowModal(false)}
+          onClose={() =>
+            setConversationState((prevState) => ({
+              ...prevState,
+              showModal: false,
+            }))
+          }
         />
       )}
 
@@ -287,33 +333,33 @@ const ChatScreen = () => {
         }}
       >
         <ChatLog
-          chatLog={chatLog}
+          chatLog={conversationState.chatLog}
           playText={playText}
           handleTranslate={handleTranslate}
-          translations={translations}
+          translations={conversationState.translations}
         />
       </div>
 
       <div className="fixed bottom-0 w-full flex justify-center items-center gap-4 bg-backgroundAlternative py-4 px-5">
         <div>
           <ChatCloseButton
-            conversationData={chatLog}
+            conversationData={conversationState.chatLog}
             onReturnHome={handleSaveConversation}
           />
         </div>
 
         <button
           className={`${
-            showModal ? "hidden" : "block"
+            conversationState.showModal ? "hidden" : "block"
           } bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover transition duration-200 flex items-center justify-center gap-2 ${
-            listening && transcriptBuffer === ""
+            conversationState.listening && conversationState.transcriptBuffer === ""
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
           onClick={toggleListening}
-          disabled={listening && transcriptBuffer === ""}
+          disabled={conversationState.listening && conversationState.transcriptBuffer === ""}
         >
-          {listening ? (
+          {conversationState.listening ? (
             <>
               
               Detener
