@@ -69,10 +69,17 @@ const ChatScreen = () => {
       try {
         const response = await fetchPreviousConversation(topic, authToken);
         if (response.data && response.data.conversation?.length > 0) {
+          // Si hay conversaciones previas, muestra el modal
           setConversationState((prevState) => ({
             ...prevState,
             previousConversation: response.data.conversation,
             showModal: true,
+          }));
+        } else {
+          // Si no hay conversaciones previas, activa directamente el flujo de saludo inicial
+          setConversationState((prevState) => ({
+            ...prevState,
+            decisionMade: true,
           }));
         }
       } catch (error) {
@@ -98,7 +105,7 @@ const ChatScreen = () => {
       ...prev,
       chatLog: updatedLog,
     }));
-    playText(welcomeBack); // Usar la función importada
+    playText(welcomeBack);
   };
 
   // Efecto que se dispara cuando chatLog cambia y se ha tomado la decisión
@@ -118,6 +125,7 @@ const ChatScreen = () => {
       showModal: false,
       decisionMade: true,
     }));
+    welcomeMessageAdded.current = false; // Reiniciar para permitir un nuevo saludo
   };
 
   // Guardar conversación en la base de datos
@@ -247,7 +255,7 @@ const ChatScreen = () => {
             ],
           }));
           playText(message);
-          welcomeMessageAdded.current = true;
+          welcomeMessageAdded.current = true; // Marcar que el saludo inicial ya fue agregado
         }
       } catch (error) {
         console.error("Error obteniendo el saludo inicial:", error);
