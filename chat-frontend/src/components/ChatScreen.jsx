@@ -5,6 +5,8 @@ import axios from "axios";
 import ChatCloseButton from "./ChatCloseButton";
 import { fetchPreviousConversation, saveConversation, sendMessageToBot } from "../services/api";
 import ChatLog from "./ChatLog";
+import Modal from "./Modal";
+
 const API_URL = "https://lets-talk-4ejt.onrender.com/api";
 
 // Configuración de Speech Recognition con idioma en inglés
@@ -256,28 +258,25 @@ const ChatScreen = () => {
       </div>
 
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal flex flex-col items-center text-textMainColor text-lg">
-            <h2 className="">Conversación previa encontrada</h2>
-            <p>
-              ¿Deseas continuar la conversación anterior o iniciar una nueva?
-            </p>
-            <div className="modal-buttons flex gap-4 justify-center w-full ">
-              <button
-                className="w-1/3 text-sm bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200"
-                onClick={handleContinueConversation}
-              >
-                Continuar
-              </button>
-              <button
-                className="w-1/3 text-sm border border-buttonColor text-buttonColor py-2 rounded hover:bg-blue-50 transition duration-200"
-                onClick={handleNewConversation}
-              >
-                Nueva conversación
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          title="Conversación previa encontrada"
+          description="¿Deseas continuar la conversación anterior o iniciar una nueva?"
+          buttons={[
+            {
+              label: "Continuar",
+              className:
+                "w-1/3 text-sm bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200",
+              onClick: handleContinueConversation,
+            },
+            {
+              label: "Nueva conversación",
+              className:
+                "w-1/3 text-sm border border-buttonColor text-buttonColor py-2 rounded hover:bg-blue-50 transition duration-200",
+              onClick: handleNewConversation,
+            },
+          ]}
+          onClose={() => setShowModal(false)}
+        />
       )}
 
       <div
