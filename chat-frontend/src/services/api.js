@@ -12,10 +12,8 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response, // Devolver la respuesta si no hay errores
   (error) => {
-    // Manejo centralizado de errores
     console.error("Error en la API:", error.response?.data || error.message);
 
-    // Opcional: Puedes personalizar los mensajes de error según el código de estado
     if (error.response) {
       const { status, data } = error.response;
       switch (status) {
@@ -24,7 +22,6 @@ apiClient.interceptors.response.use(
           break;
         case 401:
           alert("No autorizado. Por favor, inicia sesión nuevamente.");
-          // Opcional: Redirigir al usuario a la página de inicio de sesión
           break;
         case 404:
           alert("Recurso no encontrado (404)");
@@ -39,12 +36,25 @@ apiClient.interceptors.response.use(
       alert("No se pudo conectar con el servidor. Verifica tu conexión a internet.");
     }
 
-    // Rechazar la promesa para que el componente que llama pueda manejarlo si es necesario
     return Promise.reject(error);
   }
 );
 
-// Funciones de la API
+// Función para iniciar sesión
+export const loginUser = async (email, password) => {
+  const response = await apiClient.post("/user/login", { email, password });
+  return response.data; // Asegúrate de devolver los datos de la respuesta
+};
+
+// Función para obtener el perfil del usuario
+export const fetchUserProfile = async (token) => {
+  const response = await apiClient.get("/user/profile", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data; // Devuelve directamente los datos del perfil
+};
+
+// Función para obtener la conversación previa
 export const fetchPreviousConversation = async (topic, token) => {
   return apiClient.get("/chat/last-conversation", {
     params: { topic },
@@ -52,6 +62,7 @@ export const fetchPreviousConversation = async (topic, token) => {
   });
 };
 
+// Función para guardar la conversación
 export const saveConversation = async (conversation, topic, token) => {
   return apiClient.post(
     "/chat/save-conversation",
@@ -60,8 +71,10 @@ export const saveConversation = async (conversation, topic, token) => {
   );
 };
 
+// Función para enviar un mensaje al bot
 export const sendMessageToBot = async (payload, token) => {
   return apiClient.post("/chat", payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+

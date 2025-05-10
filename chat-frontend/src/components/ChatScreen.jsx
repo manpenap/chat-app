@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 import ChatCloseButton from "./ChatCloseButton";
 import { fetchPreviousConversation, saveConversation, sendMessageToBot } from "../services/api";
@@ -22,6 +23,7 @@ if (recognition) {
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
+  const { authToken } = useAuth();
   const navigate = useNavigate();
 
   if (!topic) {
@@ -70,8 +72,7 @@ const ChatScreen = () => {
   useEffect(() => {
     const loadPreviousConversation = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await fetchPreviousConversation(topic, token);
+        const response = await fetchPreviousConversation(topic, authToken);
         if (response.data && response.data.conversation?.length > 0) {
           setPreviousConversation(response.data.conversation);
           setShowModal(true);
@@ -82,7 +83,7 @@ const ChatScreen = () => {
     };
 
     loadPreviousConversation();
-  }, [topic]);
+  }, [topic, authToken]);
 
   // Funciones para manejar la decisión del modal
   const handleContinueConversation = () => {
@@ -116,8 +117,7 @@ const ChatScreen = () => {
   // Guardar conversación en la base de datos
   const handleSaveConversation = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      await saveConversation(chatLog, topic, token);
+      await saveConversation(chatLog, topic, authToken);
       navigate("/topic-selection");
     } catch (error) {
       console.error("Error al guardar la conversación:", error);
@@ -169,14 +169,13 @@ const ChatScreen = () => {
   // Enviar mensaje al bot
   const sendMessageToBotHandler = async (message) => {
     try {
-      const token = localStorage.getItem("authToken");
       const payload = {
         message,
         topic,
         userLevel: "A1",
         chatHistory: chatLog,
       };
-      const response = await sendMessageToBot(payload, token);
+      const response = await sendMessageToBot(payload, authToken);
       const botReply = response.data.botMessage;
       setChatLog((prevLog) => [...prevLog, { sender: "bot", message: botReply }]);
     } catch (error) {
