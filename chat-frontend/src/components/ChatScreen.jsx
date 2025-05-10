@@ -1,23 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useError } from "../context/ErrorContext";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
+import { fetchPreviousConversation, fetchWelcomeMessage, sendMessageToBot, saveConversation, translateMessage } from "../services/api";
 
-import ChatCloseButton from "./ChatCloseButton";
-import {
-  fetchPreviousConversation,
-  saveConversation,
-  sendMessageToBot,
-  fetchWelcomeMessage,
-  translateMessage,
-} from "../services/api";
+import ChatHeader from "./ChatHeader";
+import ChatModal from "./ChatModal";
+import ChatActions from "./ChatActions";
+import ErrorBanner from "./ErrorBanner";
 import ChatLog from "./ChatLog";
-import Modal from "./Modal";
 import { capitalizeSentences, playText } from "../utils/utils";
-
-const API_URL = "https://lets-talk-4ejt.onrender.com/api";
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
@@ -31,10 +24,6 @@ const ChatScreen = () => {
     startListening,
     stopListening,
   } = useSpeechRecognition();
-
-  if (!topic) {
-    return <p>No se proporcionaron datos del tópico.</p>;
-  }
 
   const [conversationState, setConversationState] = useState({
     chatLog: [],
@@ -218,48 +207,18 @@ const ChatScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
-      <h1 className="text-3xl text-textSecondColor pt-12"> Let's Talk</h1>
-      <div className="min-h-6">
-        {listening && transcriptBuffer === "" && (
-          <div className="flex items-center gap-2 text-yellow-300 animate-pulse">
-            <span>🎙️ Escuchando...</span>
-          </div>
-        )}
-
-        {transcriptBuffer !== "" && (
-          <div className="flex items-center gap-2 text-green-400 animate-pulse">
-            <span>✅ Pulsa "Detener" para enviar tu mensaje</span>
-          </div>
-        )}
-      </div>
-
-      {conversationState.showModal && (
-        <Modal
-          title="Conversación previa encontrada"
-          description="¿Deseas continuar la conversación anterior o iniciar una nueva?"
-          buttons={[
-            {
-              label: "Continuar",
-              className:
-                "w-1/3 text-sm bg-buttonColor text-white py-2 rounded hover:bg-buttonColorHover transition duration-200",
-              onClick: handleContinueConversation,
-            },
-            {
-              label: "Nueva conversación",
-              className:
-                "w-1/3 text-sm border border-buttonColor text-buttonColor py-2 rounded hover:bg-blue-50 transition duration-200",
-              onClick: handleNewConversation,
-            },
-          ]}
-          onClose={() =>
-            setConversationState((prevState) => ({
-              ...prevState,
-              showModal: false,
-            }))
-          }
-        />
-      )}
-
+      <ChatHeader listening={listening} transcriptBuffer={transcriptBuffer} />
+      <ChatModal
+        showModal={conversationState.showModal}
+        handleContinueConversation={handleContinueConversation}
+        handleNewConversation={handleNewConversation}
+        closeModal={() =>
+          setConversationState((prevState) => ({
+            ...prevState,
+            showModal: false,
+          }))
+        }
+      />
       <div
         ref={chatContainerRef}
         className="chat-log text-textMainColor text-lg mb-32 max-w-lg w-full overflow-y-auto"
@@ -276,41 +235,15 @@ const ChatScreen = () => {
           translations={conversationState.translations}
         />
       </div>
-
-      <div className="fixed bottom-0 w-full flex justify-center items-center gap-4 bg-backgroundAlternative py-4 px-5">
-        <div>
-          <ChatCloseButton
-            conversationData={conversationState.chatLog}
-            onReturnHome={handleSaveConversation}
-          />
-        </div>
-
-        <button
-          className={`${
-            conversationState.showModal ? "hidden" : "block"
-          } bg-buttonColor px-4 py-2 w-32 text-textMainColor rounded hover:bg-buttonColorHover transition duration-200 flex items-center justify-center gap-2 ${
-            listening && transcriptBuffer === ""
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-          onClick={toggleListening}
-          disabled={listening && transcriptBuffer === ""}
-        >
-          {listening ? "Detener" : "Hablar"}
-        </button>
-      </div>
-
-      {error && (
-        <div className="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-2 z-50">
-          <p>{error}</p>
-          <button
-            onClick={clearError}
-            className="absolute top-2 right-4 text-white font-bold"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+      <ChatActions
+        chatLog={conversationState.chatLog}
+        toggleListening={toggleListening}
+        listening={listening}
+        transcriptBuffer={transcriptBuffer}
+        handleSaveConversation={handleSaveConversation}
+        showModal={conversationState.showModal}
+      />
+      <ErrorBanner error={error} clearError={clearError} />
     </div>
   );
 };
