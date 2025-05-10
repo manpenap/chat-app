@@ -46,6 +46,17 @@ export const loginUser = async (email, password) => {
   return response.data; // Asegúrate de devolver los datos de la respuesta
 };
 
+// Función para registrar un nuevo usuario
+export const registerUser = async (name, email, password, level) => {
+  const response = await apiClient.post("/user/register", {
+    name,
+    email,
+    password,
+    level,
+  });
+  return response.data; // Devuelve los datos de la respuesta
+};
+
 // Función para obtener el perfil del usuario
 export const fetchUserProfile = async (token) => {
   const response = await apiClient.get("/user/profile", {
