@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { useError } from "../context/ErrorContext";
 
 import ChatCloseButton from "./ChatCloseButton";
 import {
@@ -32,6 +33,7 @@ const ChatScreen = () => {
   const { topic } = useLocation().state || {};
   const { authToken } = useAuth();
   const navigate = useNavigate();
+  const { error, showError, clearError } = useError();
 
   if (!topic) {
     return <p>No se proporcionaron datos del tópico.</p>;
@@ -83,12 +85,13 @@ const ChatScreen = () => {
           }));
         }
       } catch (error) {
+        showError("Error al cargar la conversación previa.");
         console.error("Error al cargar la conversación previa:", error);
       }
     };
 
     loadPreviousConversation();
-  }, [topic, authToken]);
+  }, [topic, authToken, showError]);
 
   // Funciones para manejar la decisión del modal
   const handleContinueConversation = () => {
@@ -134,6 +137,7 @@ const ChatScreen = () => {
       await saveConversation(conversationState.chatLog, topic, authToken);
       navigate("/topic-selection");
     } catch (error) {
+      showError("Error al guardar la conversación.");
       console.error("Error al guardar la conversación:", error);
     }
   };
@@ -200,6 +204,7 @@ const ChatScreen = () => {
 
       playText(botReply);
     } catch (error) {
+      showError("Error enviando mensaje al bot.");
       console.error("Error enviando mensaje al bot:", error);
     }
   };
@@ -360,6 +365,18 @@ const ChatScreen = () => {
           )}
         </button>
       </div>
+
+      {error && (
+        <div className="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-2 z-50">
+          <p>{error}</p>
+          <button
+            onClick={clearError}
+            className="absolute top-2 right-4 text-white font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 };

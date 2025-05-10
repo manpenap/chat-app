@@ -10,6 +10,7 @@ import TopicSelection from './pages/TopicSelection';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { AuthProvider } from "./context/AuthContext";
+import { ErrorProvider } from './context/ErrorContext';
 
 const AppRoutes = () => {
   let routes = useRoutes([
@@ -30,11 +31,13 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <ErrorProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorProvider>
   );
 }
 
