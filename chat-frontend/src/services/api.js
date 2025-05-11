@@ -86,7 +86,7 @@ export const translateMessage = async (message) => {
 
 // Función para obtener la conversación previa
 export const fetchPreviousConversation = async (topic, token) => {
-  return axios.get(`/chat/last-conversation`, {
+  return apiClient.get(`/chat/last-conversation`, {
     params: { topic },
     headers: { Authorization: `Bearer ${token}` },
   });
