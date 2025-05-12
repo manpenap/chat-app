@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserProfile } from "../services/api";
+import { FaUser } from "react-icons/fa"; 
 
 const TopicSelection = () => {
   const [user, setUser] = useState({ name: "" });
@@ -27,8 +28,20 @@ const TopicSelection = () => {
     navigate("/chatscreen", { state: { topic } });
   };
 
+  const handleUserProfile = () => {
+    navigate("/profile"); // Navega al endpoint /userprofile
+  };
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start gap-4 px-5 relative">
+      {/* Botón de perfil de usuario */}
+      <button
+        onClick={handleUserProfile}
+        className="absolute top-4 right-4 bg-backgroundLight text-white p-3 rounded-full hover:bg-buttonColorHover transition duration-200"
+      >
+        <FaUser size={20} />
+      </button>
+
       <div className="text-center text-textMainColor text-3xl font-bold mt-16 mb-8">
         <h1>Hola, {user.name}</h1>
         <h2>¿De qué tema te gustaría hablar hoy?</h2>
