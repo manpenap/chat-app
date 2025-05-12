@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useError } from "../context/ErrorContext";
@@ -14,7 +14,7 @@ import { capitalizeSentences, playText } from "../utils/utils";
 
 const ChatScreen = () => {
   const { topic } = useLocation().state || {};
-  const { authToken } = useAuth();
+  const { authToken,userLevel } = useAuth();
   const navigate = useNavigate();
   const { error, showError, clearError } = useError();
 
@@ -147,7 +147,7 @@ const ChatScreen = () => {
       const payload = {
         message,
         topic,
-        userLevel: "A1",
+        userLevel,
         chatHistory: conversationState.chatLog,
       };
       const response = await sendMessageToBot(payload, authToken);

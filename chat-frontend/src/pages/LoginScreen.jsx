@@ -18,9 +18,9 @@ const LoginScreen = () => {
     try {
 
       
-      const { token } = await loginUser(email, password); // Llamada a la API centralizada
+      const { token,level } = await loginUser(email, password); // Llamada a la API centralizada
      
-      login(token); // Guardar el token en AuthContext
+      login(token, level); // Guardar el token en AuthContext
 
       const userProfile = await fetchUserProfile(token); // Obtener el perfil del usuario
       
