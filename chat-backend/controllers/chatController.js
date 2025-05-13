@@ -24,6 +24,7 @@ export const getWelcomeMessage = async (req, res) => {
 };
 
 
+
 export const getLastConversation = async (req, res) => {
   try {
     const { topic } = req.query;
