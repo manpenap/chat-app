@@ -24,7 +24,6 @@ export const getWelcomeMessage = async (req, res) => {
 };
 
 
-
 export const getLastConversation = async (req, res) => {
   try {
     const { topic } = req.query;
@@ -41,9 +40,6 @@ export const getLastConversation = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
-
-
-
 
 
 export const saveConversation = async (req, res) => {
