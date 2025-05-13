@@ -1,4 +1,5 @@
 const ChatLog = ({ chatLog, playText, handleTranslate, translations }) => {
+  console.log("Rendering chatLog:", chatLog);
   return (
     <div className="chat-log">
       {chatLog.map((entry, index) => (
@@ -13,7 +14,7 @@ const ChatLog = ({ chatLog, playText, handleTranslate, translations }) => {
           <strong className="text-sm italic">
             {entry.sender === "user" ? "You: " : "System: "}
           </strong>
-          {entry.message}
+          {typeof entry.message === "string" ? entry.message : "Invalid message format"}
 
           <div className="mt-2 flex justify-between">
             {entry.sender !== "user" && (

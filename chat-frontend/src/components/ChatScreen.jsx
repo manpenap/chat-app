@@ -118,8 +118,9 @@ const ChatScreen = () => {
   // Guardar conversación en la base de datos
   const handleSaveConversation = async () => {
     try {
+      console.log("Saving conversation:", conversationState.chatLog);
       await saveConversation(conversationState.chatLog, topic, authToken);
-      navigate("/topic-selection");
+      navigate("/topic-selection"); // Redirigir al usuario después de guardar
     } catch (error) {
       showError("Error al guardar la conversación.");
       console.error("Error al guardar la conversación:", error);
@@ -130,14 +131,17 @@ const ChatScreen = () => {
   const processTranscript = () => {
     if (transcriptBuffer) {
       const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
-      setConversationState((prevState) => ({
-        ...prevState,
-        chatLog: [
-          ...prevState.chatLog,
-          { sender: "user", message: formattedMessage },
-        ],
-      }));
-      sendMessageToBotHandler(transcriptBuffer.trim());
+      if (formattedMessage) {
+        console.log("Adding user message to chatLog:", formattedMessage);
+        setConversationState((prevState) => ({
+          ...prevState,
+          chatLog: [
+            ...prevState.chatLog,
+            { sender: "user", message: formattedMessage },
+          ],
+        }));
+        sendMessageToBotHandler(formattedMessage); // Usa el mensaje formateado
+      }
     }
   };
 
@@ -151,17 +155,37 @@ const ChatScreen = () => {
         chatHistory: conversationState.chatLog,
       };
       const response = await sendMessageToBot(payload, authToken);
-      const botReply = response.data.botMessage;
 
-      setConversationState((prevState) => ({
-        ...prevState,
-        chatLog: [
-          ...prevState.chatLog,
-          { sender: "bot", message: botReply },
-        ],
-      }));
+      let { botMessage, sessionEnded } = response.data; // Desestructurar la respuesta
 
-      playText(botReply);
+      // Manejar el caso en que botMessage sea un objeto
+      if (typeof botMessage === "object" && botMessage.botMessage) {
+        botMessage = botMessage.botMessage; // Extraer el mensaje real
+      }
+
+      console.log("Response from backend:", response.data);
+      console.log("Extracted botMessage:", botMessage);
+
+      if (typeof botMessage === "string") {
+        console.log("Adding bot message to chatLog:", botMessage);
+        setConversationState((prevState) => ({
+          ...prevState,
+          chatLog: [
+            ...prevState.chatLog,
+            { sender: "bot", message: botMessage },
+          ],
+        }));
+        playText(botMessage);
+
+        // Manejar el caso en que la sesión haya terminado
+        if (sessionEnded) {
+          console.log("Session ended. Saving conversation...");
+          await handleSaveConversation(); // Guardar la conversación
+          showError("La sesión ha finalizado. Gracias por practicar.");
+        }
+      } else {
+        console.error("Invalid botReply format:", response.data);
+      }
     } catch (error) {
       showError("Error enviando mensaje al bot.");
       console.error("Error enviando mensaje al bot:", error);
