@@ -8,7 +8,6 @@
  * @param {Object} props.translations - Traducciones de mensajes
  */
 const ChatLog = ({ chatLog, playText, handleTranslate, translations }) => {
-  console.log("Rendering chatLog:", chatLog);
   return (
     <div className="chat-log">
       {chatLog.map((entry, index) => (

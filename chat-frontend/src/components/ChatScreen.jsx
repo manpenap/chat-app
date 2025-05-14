@@ -141,7 +141,6 @@ const ChatScreen = () => {
   // Guardar conversación en la base de datos
   const handleSaveConversation = async () => {
     try {
-      console.log("Saving conversation:", conversationState.chatLog);
       await saveConversation(conversationState.chatLog, topic, authToken);
       navigate("/topic-selection"); // Redirigir al usuario después de guardar
     } catch (error) {
@@ -155,7 +154,6 @@ const ChatScreen = () => {
     if (transcriptBuffer) {
       const formattedMessage = capitalizeSentences(transcriptBuffer.trim());
       if (formattedMessage) {
-        console.log("Adding user message to chatLog:", formattedMessage);
         setConversationState((prevState) => ({
           ...prevState,
           chatLog: [
@@ -186,11 +184,8 @@ const ChatScreen = () => {
         botMessage = botMessage.botMessage; // Extraer el mensaje real
       }
 
-      console.log("Response from backend:", response.data);
-      console.log("Extracted botMessage:", botMessage);
 
       if (typeof botMessage === "string") {
-        console.log("Adding bot message to chatLog:", botMessage);
         setConversationState((prevState) => ({
           ...prevState,
           chatLog: [
@@ -202,7 +197,6 @@ const ChatScreen = () => {
 
         // Manejar el caso en que la sesión haya terminado
         if (sessionEnded) {
-          console.log("Session ended. Saving conversation...");
           await handleSaveConversation(); // Guardar la conversación
           showError("La sesión ha finalizado. Gracias por practicar.");
         }
