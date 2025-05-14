@@ -1,6 +1,17 @@
 import React from "react";
 import ChatCloseButton from "./ChatCloseButton";
 
+/**
+ * ChatActions
+ * Barra de acciones del chat: cerrar chat y controlar reconocimiento de voz.
+ * @param {Object} props
+ * @param {Array} props.chatLog - Historial de mensajes
+ * @param {Function} props.toggleListening - Inicia/detiene reconocimiento de voz
+ * @param {boolean} props.listening - Si el reconocimiento está activo
+ * @param {string} props.transcriptBuffer - Texto transcrito actual
+ * @param {Function} props.handleSaveConversation - Guarda la conversación
+ * @param {boolean} props.showModal - Si el modal está visible
+ */
 const ChatActions = ({
   chatLog,
   toggleListening,

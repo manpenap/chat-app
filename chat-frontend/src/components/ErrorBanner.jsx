@@ -1,5 +1,12 @@
 import React from "react";
 
+/**
+ * ErrorBanner
+ * Muestra un banner de error fijo en la parte superior.
+ * @param {Object} props
+ * @param {string|null} props.error - Mensaje de error a mostrar
+ * @param {Function} props.clearError - Función para limpiar el error
+ */
 const ErrorBanner = ({ error, clearError }) => {
   if (!error) return null;
 

@@ -1,6 +1,15 @@
 import React from "react";
 import Modal from "./Modal";
 
+/**
+ * ChatModal
+ * Modal para decidir si continuar o iniciar una nueva conversación.
+ * @param {Object} props
+ * @param {boolean} props.showModal - Si se muestra el modal
+ * @param {Function} props.handleContinueConversation - Acción para continuar conversación previa
+ * @param {Function} props.handleNewConversation - Acción para iniciar nueva conversación
+ * @param {Function} props.closeModal - Acción para cerrar el modal
+ */
 const ChatModal = ({ showModal, handleContinueConversation, handleNewConversation, closeModal }) => {
   if (!showModal) return null;
 

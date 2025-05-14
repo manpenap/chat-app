@@ -12,12 +12,20 @@ import ErrorBanner from "./ErrorBanner";
 import ChatLog from "./ChatLog";
 import { capitalizeSentences, playText } from "../utils/utils";
 
+/**
+ * ChatScreen
+ * Componente principal de la pantalla de chat.
+ * Gestiona el flujo de conversación, reconocimiento de voz, historial, modal de conversación previa y acciones del usuario.
+ */
 const ChatScreen = () => {
+  // Obtiene el tema seleccionado desde la navegación
   const { topic } = useLocation().state || {};
-  const { authToken,userLevel } = useAuth();
+  // Obtiene el token de autenticación y nivel de usuario del contexto
+  const { authToken, userLevel } = useAuth();
   const navigate = useNavigate();
   const { error, showError, clearError } = useError();
 
+  // Reconocimiento de voz
   const {
     listening,
     transcriptBuffer,
@@ -25,6 +33,15 @@ const ChatScreen = () => {
     stopListening,
   } = useSpeechRecognition();
 
+  /**
+   * Estado principal de la conversación
+   * @typedef {Object} ConversationState
+   * @property {Array} chatLog - Historial de mensajes
+   * @property {Array|null} previousConversation - Conversación previa si existe
+   * @property {Object} translations - Traducciones de mensajes
+   * @property {boolean} showModal - Si se muestra el modal de conversación previa
+   * @property {boolean} decisionMade - Si el usuario ya tomó una decisión sobre la conversación previa
+   */
   const [conversationState, setConversationState] = useState({
     chatLog: [],
     previousConversation: null,
@@ -33,9 +50,15 @@ const ChatScreen = () => {
     decisionMade: false,
   });
 
+  // Refs para controlar el saludo inicial y el scroll del chat
   const welcomeMessageAdded = useRef(false);
   const chatContainerRef = useRef(null);
 
+  /**
+   * Traduce un mensaje del bot y lo almacena en el estado.
+   * @param {number} index - Índice del mensaje en el chatLog
+   * @param {string} message - Mensaje a traducir
+   */
   const handleTranslate = async (index, message) => {
     if (conversationState.translations[index]) return;
     try {

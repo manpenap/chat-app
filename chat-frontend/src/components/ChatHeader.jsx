@@ -1,5 +1,12 @@
 import React from "react";
 
+/**
+ * ChatHeader
+ * Encabezado del chat, muestra el estado del reconocimiento de voz.
+ * @param {Object} props
+ * @param {boolean} props.listening - Si el reconocimiento de voz está activo
+ * @param {string} props.transcriptBuffer - Texto transcrito actual
+ */
 const ChatHeader = ({ listening, transcriptBuffer }) => {
   return (
     <div>

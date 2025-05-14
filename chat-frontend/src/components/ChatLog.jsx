@@ -1,3 +1,12 @@
+/**
+ * ChatLog
+ * Muestra el historial de mensajes del chat.
+ * @param {Object} props
+ * @param {Array} props.chatLog - Historial de mensajes
+ * @param {Function} props.playText - Función para reproducir audio del mensaje
+ * @param {Function} props.handleTranslate - Función para traducir mensajes
+ * @param {Object} props.translations - Traducciones de mensajes
+ */
 const ChatLog = ({ chatLog, playText, handleTranslate, translations }) => {
   console.log("Rendering chatLog:", chatLog);
   return (
