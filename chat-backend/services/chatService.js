@@ -3,6 +3,7 @@ import { callOpenAIChat, synthesizeSpeech } from './externalApiService.js';
 import { getLastConversationByTopic, saveConversationWithTopic } from '../repositories/chatRepository.js';
 import { createOrUpdateChatSession, getChatSession, endChatSession } from '../repositories/chatSessionRepository.js'; // Nuevo repositorio para ChatSession
 import { estimateTokens } from '../utils/tokenEstimator.js'; // Utilidad para estimar tokens
+import { grantDailyConversationAchievement } from '../services/achievementService.js'; // Importa el servicio de logros
 
 const MAX_TOKENS = 3500; // Límite de tokens para el contexto
 const SUGGEST_END_MINUTES = 5; // Tiempo mínimo para sugerir finalizar
@@ -31,9 +32,16 @@ export const handleChatMessage = async (userId, message, topic, userLevel, chatH
   if (sessionDuration >= FORCE_END_MINUTES) {
     const feedback = generateFeedback(chatHistory);
     await endChatSession(chatSession._id); // Marcar la sesión como finalizada
+
+    // Otorgar logro diario
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    await grantDailyConversationAchievement(userId, today);
+
     return {
       botMessage: `Thank you for practicing! Here's your feedback: ${feedback}. See you next time!`,
       sessionEnded: true,
+      achievementGranted: true, // Puedes retornar esto para el frontend
+      achievementDate: today
     };
   }
 

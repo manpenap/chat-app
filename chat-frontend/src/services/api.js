@@ -108,3 +108,11 @@ export const sendMessageToBot = async (payload, token) => {
   });
 };
 
+// Función para obtener los logros del usuario
+export const fetchUserAchievements = async (token) => {
+  const response = await apiClient.get("/achievements", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data.achievements;
+};
+

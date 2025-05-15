@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { fetchUserAchievements } from "../services/api";
 
 const UserProfile = () => {
   const { authToken, setUserLevel } = useAuth(); // Obtén el token y la función para actualizar el nivel en el contexto
   const [user, setUser] = useState({ name: "", email: "", level: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [achievements, setAchievements] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -27,6 +29,14 @@ const UserProfile = () => {
     };
     fetchUserData();
   }, [authToken, setUserLevel]);
+
+  useEffect(() => {
+    const loadAchievements = async () => {
+      const data = await fetchUserAchievements(authToken);
+      setAchievements(data);
+    };
+    loadAchievements();
+  }, [authToken]);
 
   return (
     <div className="min-h-screen bg-backgroundAlternative flex items-center justify-center">
@@ -61,6 +71,17 @@ const UserProfile = () => {
               <p className="w-full px-4 py-2 border text-textMainColor border-gray-300 rounded bg-backgroundLight">
                 {user.level}
               </p>
+            </div>
+            <div>
+              <h2>Mis logros diarios</h2>
+              <div className="badges">
+                {achievements.map((ach, idx) => (
+                  <span key={idx} className="badge">
+                    🏆 {ach.date}
+                  </span>
+                ))}
+              </div>
+              <p>Total de días con logro: {achievements.length}</p>
             </div>
             <button
               onClick={() => window.history.back()}
