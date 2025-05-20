@@ -64,7 +64,7 @@ export const handleChat = async (req, res) => {
     const { message, topic, userLevel, chatHistory } = req.body;
     const userId = req.user._id;
     const botResponse = await chatService.handleChatMessage(userId, message, topic, userLevel, chatHistory);
-    res.json({ botMessage: botResponse });
+    res.json(botResponse);
   } catch (error) {
     console.error('Error manejando el chat:', error);
     res.status(500).json({ error: 'Error interno del servidor.' });

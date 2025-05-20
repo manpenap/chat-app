@@ -177,6 +177,12 @@ const ChatScreen = () => {
       };
       const response = await sendMessageToBot(payload, authToken);
 
+      console.log( response.data.wordCount);
+      // Chequea el conteo de palabras recibido del backend
+      if (response.data.wordCount !== undefined) {
+        console.log("Palabras pronunciadas por el usuario:", response.data.wordCount);
+      }
+
       let { botMessage, sessionEnded } = response.data; // Desestructurar la respuesta
 
       // Manejar el caso en que botMessage sea un objeto

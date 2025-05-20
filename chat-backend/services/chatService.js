@@ -6,8 +6,14 @@ import { estimateTokens } from '../utils/tokenEstimator.js'; // Utilidad para es
 import { grantDailyConversationAchievement } from '../services/achievementService.js'; // Importa el servicio de logros
 
 const MAX_TOKENS = 3500; // Límite de tokens para el contexto
-const SUGGEST_END_MINUTES = 5; // Tiempo mínimo para sugerir finalizar
-const FORCE_END_MINUTES = 10; // Tiempo máximo antes de finalizar automáticamente
+
+
+// --- NUEVO: Función para contar palabras del usuario ---
+const countUserWords = (chatHistory) => {
+  return chatHistory
+    .filter(entry => entry.sender === 'user')
+    .reduce((acc, entry) => acc + (entry.message?.split(/\s+/).length || 0), 0);
+};
 
 export const handleChatMessage = async (userId, message, topic, userLevel, chatHistory) => {
   // 1. Gestionar la sesión de chat
@@ -21,29 +27,104 @@ export const handleChatMessage = async (userId, message, topic, userLevel, chatH
   // Calcular la duración de la sesión
   const sessionDuration = (new Date() - new Date(chatSession.startTime)) / 1000 / 60; // En minutos
 
-  // 2. Controlar duración de la conversación
-  if (sessionDuration >= SUGGEST_END_MINUTES && sessionDuration < FORCE_END_MINUTES) {
-    return {
-      botMessage: `You've been practicing for ${Math.floor(sessionDuration)} minutes. Would you like to end the session and receive feedback?`,
-      suggestEnd: true,
-    };
+  // --- NUEVO: Lógica basada en palabras pronunciadas ---
+  const userWordCount = countUserWords(chatHistory);
+
+  // Dentro de handleChatMessage, antes de la lógica de palabras:
+  if (chatSession.askedAt800 && userWordCount >= 800 && /no/i.test(message)) {
+    // El usuario dijo que no en 800 palabras, continúa normalmente
+    // (No hagas nada especial, solo sigue el flujo)
   }
-
-  if (sessionDuration >= FORCE_END_MINUTES) {
+  if (chatSession.askedAt500 && userWordCount >= 500 && /no/i.test(message)) {
+    // El usuario dijo que no en 500 palabras, continúa normalmente
+  }
+  if ((chatSession.askedAt500 && userWordCount >= 500 && /yes/i.test(message)) ||
+      (chatSession.askedAt800 && userWordCount >= 800 && /yes/i.test(message))) {
+    // El usuario acepta terminar
     const feedback = generateFeedback(chatHistory);
-    await endChatSession(chatSession._id); // Marcar la sesión como finalizada
-
-    // Otorgar logro diario
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    await endChatSession(chatSession._id);
+    const today = new Date().toISOString().slice(0, 10);
     await grantDailyConversationAchievement(userId, today);
 
     return {
       botMessage: `Thank you for practicing! Here's your feedback: ${feedback}. See you next time!`,
       sessionEnded: true,
-      achievementGranted: true, // Puedes retornar esto para el frontend
+      achievementGranted: true,
       achievementDate: today
     };
   }
+
+  // Si ya preguntó en 1000 palabras o más, termina la sesión automáticamente
+  if (userWordCount >= 1000) {
+    const feedback = generateFeedback(chatHistory);
+    await endChatSession(chatSession._id);
+    const today = new Date().toISOString().slice(0, 10);
+    await grantDailyConversationAchievement(userId, today);
+
+    return {
+      botMessage: `Thank you for practicing! Here's your feedback: ${feedback}. See you next time!`,
+      sessionEnded: true,
+      achievementGranted: true,
+      achievementDate: today
+    };
+  }
+
+  // Si ya preguntó en 800 palabras y el usuario responde "no", continúa; si responde "yes", termina
+  if (chatSession.askedAt800 && userWordCount >= 800) {
+    if (/^\s*yes\s*$/i.test(message.trim())) {
+      const feedback = generateFeedback(chatHistory);
+      await endChatSession(chatSession._id);
+      const today = new Date().toISOString().slice(0, 10);
+      await grantDailyConversationAchievement(userId, today);
+
+      return {
+        botMessage: `Thank you for practicing! Here's your feedback: ${feedback}. See you next time!`,
+        sessionEnded: true,
+        achievementGranted: true,
+        achievementDate: today
+      };
+    }
+    // Si responde "no", continúa la conversación normalmente
+  }
+
+  // Si ya preguntó en 500 palabras y el usuario responde "no", continúa; si responde "yes", termina
+  if (chatSession.askedAt500 && userWordCount >= 500 && userWordCount < 800) {
+    if (/^\s*yes\s*$/i.test(message.trim())) {
+      const feedback = generateFeedback(chatHistory);
+      await endChatSession(chatSession._id);
+      const today = new Date().toISOString().slice(0, 10);
+      await grantDailyConversationAchievement(userId, today);
+
+      return {
+        botMessage: `Thank you for practicing! Here's your feedback: ${feedback}. See you next time!`,
+        sessionEnded: true,
+        achievementGranted: true,
+        achievementDate: today
+      };
+    }
+    // Si responde "no", continúa la conversación normalmente
+  }
+
+  // Pregunta al usuario si quiere terminar en 500 palabras (solo una vez)
+  if (userWordCount >= 500 && userWordCount < 800 && !chatSession.askedAt500) {
+    await createOrUpdateChatSession(userId, topic, { askedAt500: true });
+    return {
+      botMessage: "You've pronounced over 500 words! Would you like to end the session and receive feedback? (yes/no)",
+      suggestEnd: true,
+      wordCount: userWordCount
+    };
+  }
+
+  // Pregunta al usuario si quiere terminar en 800 palabras (solo una vez)
+  if (userWordCount >= 800 && userWordCount < 1000 && !chatSession.askedAt800) {
+    await createOrUpdateChatSession(userId, topic, { askedAt800: true });
+    return {
+      botMessage: "You've pronounced over 800 words! Would you like to end the session and receive feedback? (yes/no)",
+      suggestEnd: true,
+      wordCount: userWordCount
+    };
+  }
+
 
   // 3. Limitar el uso de tokens
   const estimatedTokens = estimateTokens(chatHistory);
@@ -94,6 +175,7 @@ export const handleChatMessage = async (userId, message, topic, userLevel, chatH
   return {
     botMessage: botResponse,
     sessionId: chatSession._id, // Retornar el sessionId para el frontend
+    wordCount: userWordCount // Retornar el conteo de palabras del usuario para depuración
   };
 };
 
